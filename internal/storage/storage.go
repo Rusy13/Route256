@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"DZ1/internal/models"
+	"HW1/internal/model"
 	"bufio"
 	"encoding/json"
 	"errors"
