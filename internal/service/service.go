@@ -146,8 +146,12 @@ func (s Service) GetRefundList(firstNumber int, numberOfOrders int) ([]storage.O
 			ordersList = append(ordersList, order)
 		}
 	}
+	if len(ordersList) < numberOfOrders {
+		return nil, errors.New("количество возвращенных заказов меньше, чем вы ввели")
+	}
 	if numberOfOrders > len(ordersList[firstNumber-1:firstNumber+numberOfOrders-1]) {
 		return nil, errors.New("количество ожидаемых заказов больше чем реальное количество на ПВЗ")
 	}
+
 	return ordersList[firstNumber-1 : firstNumber+numberOfOrders-1], nil
 }
