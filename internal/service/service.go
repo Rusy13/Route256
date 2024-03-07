@@ -8,11 +8,19 @@ import (
 	"time"
 )
 
-type Service struct {
-	s storage.StorageI
+type StorageI interface {
+	Create(input models.OrderInput) error
+	Delete(id int) error
+	Refund(idClient int, idOrder int) error
+	ListAll() ([]storage.OrderDTO, error)
+	Issued(ordersList map[int]bool, err error) error
 }
 
-func New(s storage.StorageI) Service {
+type Service struct {
+	s StorageI
+}
+
+func New(s StorageI) Service {
 	return Service{s: s}
 }
 
@@ -108,7 +116,7 @@ func (s Service) GetOrderList(idClient int, optionalParams ...interface{}) ([]st
 	}
 
 	if inPvz {
-		pvzOrders := []storage.OrderDTO{}
+		var pvzOrders []storage.OrderDTO
 		for _, order := range orders {
 			if order.MetkaPVZ == "PVZ_UGAROV_RUSLAN" && order.ClientID == idClient {
 				pvzOrders = append(pvzOrders, order)
@@ -132,7 +140,7 @@ func (s Service) AcceptRefundFromClient(idOrder int, idClient int) error {
 			return s.s.Refund(idOrder, idClient)
 		}
 	}
-	return errors.New("Прошло слишком много времени или товар выдавался не нашим ПВЗ")
+	return errors.New("прошло слишком много времени или товар выдавался не нашим ПВЗ")
 }
 
 func (s Service) GetRefundList(firstNumber int, numberOfOrders int) ([]storage.OrderDTO, error) {

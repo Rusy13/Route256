@@ -12,14 +12,6 @@ import (
 
 const storageName = "storage"
 
-type StorageI interface {
-	Create(input models.OrderInput) error
-	Delete(id int) error
-	Refund(idClient int, idOrder int) error
-	ListAll() ([]OrderDTO, error)
-	Issued(ordersList map[int]bool, err error) error
-}
-
 type Storage struct {
 	storage *os.File
 	orders  []OrderDTO
