@@ -11,45 +11,45 @@ import (
 type StorageI interface {
 	Create(input models.OrderInput) error
 	Delete(id int) error
-	Refund(idClient int, idOrder int) error
+	Refund(clientID int, orderID int) error
 	ListAll() ([]storage.OrderDTO, error)
 	Issued(ordersList map[int]bool, err error) error
 }
 
 type Service struct {
-	s StorageI
+	storage StorageI
 }
 
 func New(s StorageI) Service {
-	return Service{s: s}
+	return Service{storage: s}
 }
 
 func (s Service) AcceptOrderFromCourier(input models.OrderInput) error {
 	if input.StorageTime.Before(time.Now()) {
 		return errors.New("срок хранения в прошлом")
 	}
-	return s.s.Create(input)
+	return s.storage.Create(input)
 }
 
-func (s Service) ReturnOrderToCourier(idOrder int) error {
-	orders, err := s.s.ListAll()
+func (s Service) ReturnOrderToCourier(orderID int) error {
+	orders, err := s.storage.ListAll()
 	if err != nil {
 		return err
 	}
-	if idOrder <= 0 {
+	if orderID <= 0 {
 		return errors.New("неверный формат id заказа (id может быть только больше 0)")
 	}
 	for _, order := range orders {
-		if (order.OrderID == idOrder) && (order.StorageTime.Before(time.Now())) && (!order.IsIssued) {
+		if (order.OrderID == orderID) && (order.StorageTime.Before(time.Now())) && (!order.IsIssued) {
 			//orders[index].IsDeleted = true
-			return s.s.Delete(idOrder)
+			return s.storage.Delete(orderID)
 		}
 	}
-	return errors.New("Срок действия не истек") //s.s.Delete(idOrder)
+	return errors.New("срок действия не истек") //s.s.Delete(orderID)
 }
 
 func (s Service) IssueOrderToClient(orderIDs []int) error {
-	orders, err := s.s.ListAll()
+	orders, err := s.storage.ListAll()
 	fmt.Println(orders)
 	if err != nil {
 		return err
@@ -76,11 +76,11 @@ func (s Service) IssueOrderToClient(orderIDs []int) error {
 		}
 
 	}
-	return s.s.Issued(ordersMap, err)
+	return s.storage.Issued(ordersMap, err)
 }
 
-func (s Service) GetOrderList(idClient int, optionalParams ...interface{}) ([]storage.OrderDTO, error) {
-	orders, err := s.s.ListAll()
+func (s Service) GetOrderList(clientID int, optionalParams ...interface{}) ([]storage.OrderDTO, error) {
+	orders, err := s.storage.ListAll()
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (s Service) GetOrderList(idClient int, optionalParams ...interface{}) ([]st
 		case bool:
 			inPvz = p
 		default:
-			return nil, errors.New("Недопустимый тип опционального параметра")
+			return nil, errors.New("недопустимый тип опционального параметра")
 		}
 	}
 
@@ -103,7 +103,7 @@ func (s Service) GetOrderList(idClient int, optionalParams ...interface{}) ([]st
 		ordersList := make([]storage.OrderDTO, 0)
 		count := 0
 		for _, order := range orders {
-			if order.ClientID == idClient {
+			if order.ClientID == clientID {
 				ordersList = append(ordersList, order)
 				count += 1
 			}
@@ -118,7 +118,7 @@ func (s Service) GetOrderList(idClient int, optionalParams ...interface{}) ([]st
 	if inPvz {
 		var pvzOrders []storage.OrderDTO
 		for _, order := range orders {
-			if order.MetkaPVZ == "PVZ_UGAROV_RUSLAN" && order.ClientID == idClient {
+			if order.MetkaPVZ == "PVZ_UGAROV_RUSLAN" && order.ClientID == clientID {
 				pvzOrders = append(pvzOrders, order)
 			}
 		}
@@ -127,24 +127,24 @@ func (s Service) GetOrderList(idClient int, optionalParams ...interface{}) ([]st
 	return orders, nil
 }
 
-func (s Service) AcceptRefundFromClient(idOrder int, idClient int) error {
-	if idOrder <= 0 || idClient <= 0 {
+func (s Service) AcceptRefundFromClient(orderID int, clientID int) error {
+	if orderID <= 0 || clientID <= 0 {
 		return errors.New("неверный формат id (id не может быть меньше или равен 0)")
 	}
-	orders, err := s.s.ListAll()
+	orders, err := s.storage.ListAll()
 	if err != nil {
 		return err
 	}
 	for _, order := range orders {
-		if order.OrderID == idOrder && order.ClientID == idClient && order.MetkaPVZ == "PVZ_UGAROV_RUSLAN" && time.Since(order.IssuedDate) <= 2*24*time.Hour { //2 days{
-			return s.s.Refund(idOrder, idClient)
+		if order.OrderID == orderID && order.ClientID == clientID && order.MetkaPVZ == "PVZ_UGAROV_RUSLAN" && time.Since(order.IssuedDate) <= 2*24*time.Hour { //2 days{
+			return s.storage.Refund(orderID, clientID)
 		}
 	}
 	return errors.New("прошло слишком много времени или товар выдавался не нашим ПВЗ")
 }
 
 func (s Service) GetRefundList(firstNumber int, numberOfOrders int) ([]storage.OrderDTO, error) {
-	all, err := s.s.ListAll()
+	all, err := s.storage.ListAll()
 	if err != nil {
 		return nil, err
 	}

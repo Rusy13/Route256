@@ -122,13 +122,13 @@ func (s *Storage) Delete(id int) error {
 }
 
 // Refund order
-func (s *Storage) Refund(idClient int, idOrder int) error {
+func (s *Storage) Refund(clientID int, orderID int) error {
 	all, err := s.ListAll()
 	if err != nil {
 		return err
 	}
 	for indx, order := range all {
-		if order.OrderID == idOrder && order.ClientID == idClient {
+		if order.OrderID == orderID && order.ClientID == clientID {
 			all[indx].IsReturned = true
 		}
 	}
