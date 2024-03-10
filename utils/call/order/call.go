@@ -1,8 +1,8 @@
-package call
+package order
 
 import (
-	models "HW1/internal/model"
-	"HW1/internal/service"
+	models "HW1/internal/model/order"
+	"HW1/internal/service/order"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,10 +11,10 @@ import (
 )
 
 type CLI struct {
-	service service.Service
+	service order.Service
 }
 
-func NewCLI(serv service.Service) *CLI {
+func NewCLI(serv order.Service) *CLI {
 	return &CLI{service: serv}
 }
 

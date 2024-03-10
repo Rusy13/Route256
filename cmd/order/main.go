@@ -1,21 +1,21 @@
 package main
 
 import (
-	"HW1/internal/service"
-	"HW1/internal/storage"
-	"HW1/utils/call"
+	order2 "HW1/internal/service/order"
+	"HW1/internal/storage/order"
+	order3 "HW1/utils/call/order"
 	"log"
 )
 
 func main() {
 	// Создаем экземпляр хранилища
-	stor, err := storage.New()
+	stor, err := order.New()
 	if err != nil {
 		log.Fatal("не удалось подключиться к хранилищу:", err)
 	}
 	// Создаем сервис, передавая ему хранилище
-	serv := service.New(&stor)
+	serv := order2.New(&stor)
 
-	cli := call.NewCLI(serv)
+	cli := order3.NewCLI(serv)
 	cli.Run()
 }

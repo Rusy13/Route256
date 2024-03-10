@@ -1,7 +1,7 @@
-package storage
+package order
 
 import (
-	"HW1/internal/model"
+	"HW1/internal/model/order"
 	"bufio"
 	"encoding/json"
 	"errors"
@@ -60,7 +60,7 @@ func (s *Storage) ListAll() ([]OrderDTO, error) {
 }
 
 // Create creates order
-func (s *Storage) Create(input models.OrderInput) error {
+func (s *Storage) Create(input order.OrderInput) error {
 	all, err := s.ListAll()
 	if err != nil {
 		return err
