@@ -25,9 +25,9 @@ func (cli *CLI) Run() {
 
 	switch command {
 	case "create":
-		cli.Create(args)
+		go cli.Create(args)
 	case "list":
-		cli.List()
+		go cli.List()
 	case "help":
 		cli.Help()
 	default:

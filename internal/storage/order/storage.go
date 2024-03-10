@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const storageName = "storage"
+const storageName = "storageOrder"
 
 type Storage struct {
 	storage *os.File
