@@ -36,7 +36,7 @@ func (s Service) GetPvzList() ([]pvz2.PvzDTO, error) {
 }
 
 func MonitorThreads() {
-	ticker := time.NewTicker(5 * time.Second) // опрашиваем каждые 5 секунд
+	ticker := time.NewTicker(40 * time.Second) // опрашиваем каждые 5 секунд
 	defer ticker.Stop()
 
 	for {

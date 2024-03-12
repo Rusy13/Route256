@@ -22,19 +22,36 @@ func main() {
 		}
 	}()
 
+	// Создаем каналы для передачи команд
+	createCmdCh := make(chan []string)
+	listCmdCh := make(chan struct{})
+
 	go stor.HandleSignals()
 	// Создаем сервис, передавая ему хранилище
 	serv := pvz2.New(&stor)
 
 	var wg sync.WaitGroup
-	wg.Add(2)
+	wg.Add(1)
+
+	go func() {
+		cli := pvz3.NewCLI(serv)
+		cli.List(listCmdCh)
+	}()
+
+	go func() {
+		cli := pvz3.NewCLI(serv)
+		cli.Create(createCmdCh)
+	}()
+
+	go func() {
+		//defer wg.Done()
+		cli := pvz3.NewCLI(serv)
+		cli.Run(createCmdCh, listCmdCh)
+	}()
 
 	go func() {
 		defer wg.Done()
-		cli := pvz3.NewCLI(serv)
-		cli.Run()
+		pvz4.MonitorThreads()
 	}()
-
-	go pvz4.MonitorThreads()
 	wg.Wait()
 }
