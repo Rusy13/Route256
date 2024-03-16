@@ -19,8 +19,9 @@ const storageName = "storagePvz"
 type Storage struct {
 	storage *os.File
 	pvzs    []PvzDTO
-	muRead  sync.Mutex
-	muWrite sync.Mutex
+	//muRead  sync.Mutex
+	//muWrite sync.Mutex
+	mu sync.RWMutex
 }
 
 func New() (Storage, error) {
@@ -63,17 +64,21 @@ func (s *Storage) readOrdersFromStorage() ([]PvzDTO, error) {
 }
 
 func (s *Storage) ListAll() ([]PvzDTO, error) {
-	s.muRead.Lock()
-	defer s.muRead.Unlock()
-	//time.Sleep(15 * time.Second)
+	//s.muRead.Lock()
+	//defer s.muRead.Unlock()
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	time.Sleep(15 * time.Second)
 
 	return s.pvzs, nil // Просто возвращаем данные, уже прочитанные из файла
 }
 
 // Create creates pvz
 func (s *Storage) Create(input pvz.Pvz) error {
-	s.muWrite.Lock()
-	defer s.muWrite.Unlock()
+	//s.muWrite.Lock()
+	//defer s.muWrite.Unlock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	//time.Sleep(15 * time.Second)
 
 	// Проверяем наличие уже существующего PVZ
