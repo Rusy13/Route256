@@ -68,12 +68,10 @@ func (s *Storage) ListAll() ([]PvzDTO, error) {
 	//defer s.muRead.Unlock()
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	time.Sleep(15 * time.Second)
-
-	return s.pvzs, nil // Просто возвращаем данные, уже прочитанные из файла
+	//time.Sleep(15 * time.Second)
+	return s.pvzs, nil
 }
 
-// Create creates pvz
 func (s *Storage) Create(input pvz.Pvz) error {
 	//s.muWrite.Lock()
 	//defer s.muWrite.Unlock()
@@ -81,7 +79,6 @@ func (s *Storage) Create(input pvz.Pvz) error {
 	defer s.mu.Unlock()
 	//time.Sleep(15 * time.Second)
 
-	// Проверяем наличие уже существующего PVZ
 	for _, pvz := range s.pvzs {
 		if pvz.PvzName == input.PvzName {
 			return errors.New("пвз уже принят")
@@ -96,10 +93,7 @@ func (s *Storage) Create(input pvz.Pvz) error {
 		AddDate: time.Now(),
 	}
 
-	// Добавляем в список PVZ
 	s.pvzs = append(s.pvzs, newPvz)
-
-	// Пишем изменения в файл
 	err := s.writeBytes()
 	if err != nil {
 		return err

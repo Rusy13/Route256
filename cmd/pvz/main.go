@@ -1,16 +1,14 @@
 package main
 
 import (
-	pvz2 "HW1/internal/service/pvz"
-	pvz4 "HW1/internal/service/pvz"
+	pvzService "HW1/internal/service/pvz"
 	"HW1/internal/storage/pvz"
-	pvz3 "HW1/utils/call/pvz"
+	pvzCall "HW1/utils/call/pvz"
 	"log"
 	"sync"
 )
 
 func main() {
-	// Создаем экземпляр хранилища
 	stor, err := pvz.New()
 	if err != nil {
 		log.Fatal("не удалось подключиться к хранилищу:", err)
@@ -22,36 +20,35 @@ func main() {
 		}
 	}()
 
-	// Создаем каналы для передачи команд
 	createCmdCh := make(chan []string)
 	listCmdCh := make(chan struct{})
 
+	SignCh := make(chan string)
+
 	go stor.HandleSignals()
-	// Создаем сервис, передавая ему хранилище
-	serv := pvz2.New(&stor)
+	serv := pvzService.New(&stor)
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go func() {
-		cli := pvz3.NewCLI(serv)
-		cli.List(listCmdCh)
+		cli := pvzCall.NewCLI(serv)
+		cli.List(listCmdCh, SignCh)
 	}()
 
 	go func() {
-		cli := pvz3.NewCLI(serv)
-		cli.Create(createCmdCh)
+		cli := pvzCall.NewCLI(serv)
+		cli.Create(createCmdCh, SignCh)
 	}()
 
 	go func() {
-		//defer wg.Done()
-		cli := pvz3.NewCLI(serv)
-		cli.Run(createCmdCh, listCmdCh)
+		cli := pvzCall.NewCLI(serv)
+		cli.Run(createCmdCh, listCmdCh, SignCh)
 	}()
 
 	go func() {
 		defer wg.Done()
-		pvz4.MonitorThreads()
+		pvzService.MonitorThreads(SignCh)
 	}()
 	wg.Wait()
 }

@@ -18,7 +18,7 @@ func NewCLI(serv pvz.Service) *CLI {
 	return &CLI{service: serv}
 }
 
-func (cli *CLI) Run(createCmdCh chan<- []string, listCmdCh chan<- struct{}) {
+func (cli *CLI) Run(createCmdCh chan<- []string, listCmdCh chan<- struct{}, SignCh chan<- string) {
 	go func() {
 		fmt.Println("Введите команду (create <PvzName> <Address> <Email> или list):")
 		reader := bufio.NewReader(os.Stdin)
@@ -44,16 +44,16 @@ func (cli *CLI) Run(createCmdCh chan<- []string, listCmdCh chan<- struct{}) {
 				}
 				select {
 				case createCmdCh <- args[1:]:
-					fmt.Println("Команда list отправлена")
+					SignCh <- "Команда create отправлена"
 				default:
-					fmt.Println("Команда list уже в обработке")
+					SignCh <- "Команда create уже в обработке"
 				}
 			case "list":
 				select {
 				case listCmdCh <- struct{}{}:
-					fmt.Println("Команда list отправлена")
+					SignCh <- "Команда list отправлена"
 				default:
-					fmt.Println("Команда list уже в обработке")
+					SignCh <- "Команда list уже в обработке"
 				}
 			default:
 				fmt.Println("неизвестная команда")
@@ -62,17 +62,7 @@ func (cli *CLI) Run(createCmdCh chan<- []string, listCmdCh chan<- struct{}) {
 	}()
 }
 
-func parseArgs(input string) []string {
-	args := []string{}
-	for _, arg := range os.Args[1:] {
-		arg = os.ExpandEnv(arg)
-		args = append(args, arg)
-	}
-	return args
-}
-
-func (cli *CLI) Create(createCmdCh <-chan []string) {
-	// Реализация логики для команды "create"
+func (cli *CLI) Create(createCmdCh <-chan []string, SignCh chan<- string) {
 	for args := range createCmdCh {
 		if len(args) < 3 {
 			fmt.Println("необходимо указать название пвз, адрес и эмаил")
@@ -87,11 +77,12 @@ func (cli *CLI) Create(createCmdCh <-chan []string) {
 		} else {
 			fmt.Println("ПВЗ успешно создан")
 		}
+		SignCh <- "create завершен"
 	}
 }
 
-func (cli *CLI) List(listCmdCh <-chan struct{}) {
-	// Реализация логики для команды "list"
+func (cli *CLI) List(listCmdCh <-chan struct{}, SignCh chan<- string) {
+
 	for range listCmdCh {
 		orders, err := cli.service.GetPvzList()
 		if err != nil {
@@ -102,11 +93,11 @@ func (cli *CLI) List(listCmdCh <-chan struct{}) {
 		for _, order := range orders {
 			fmt.Println(order)
 		}
+		SignCh <- "list завершен"
 	}
 }
 
 func (cli *CLI) Help() {
-	// Реализация вывода справки
 	printHelp()
 }
 
