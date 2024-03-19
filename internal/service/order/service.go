@@ -1,18 +1,18 @@
-package service
+package order
 
 import (
-	"HW1/internal/model"
-	"HW1/internal/storage"
+	order2 "HW1/internal/model/order"
+	"HW1/internal/storage/order"
 	"errors"
 	"fmt"
 	"time"
 )
 
 type StorageI interface {
-	Create(input models.OrderInput) error
+	Create(input order2.OrderInput) error
 	Delete(id int) error
 	Refund(clientID int, orderID int) error
-	ListAll() ([]storage.OrderDTO, error)
+	ListAll() ([]order.OrderDTO, error)
 	Issued(ordersList map[int]bool, err error) error
 }
 
@@ -24,7 +24,7 @@ func New(s StorageI) Service {
 	return Service{storage: s}
 }
 
-func (s Service) AcceptOrderFromCourier(input models.OrderInput) error {
+func (s Service) AcceptOrderFromCourier(input order2.OrderInput) error {
 	if input.StorageTime.Before(time.Now()) {
 		return errors.New("срок хранения в прошлом")
 	}
@@ -79,7 +79,7 @@ func (s Service) IssueOrderToClient(orderIDs []int) error {
 	return s.storage.Issued(ordersMap, err)
 }
 
-func (s Service) GetOrderList(clientID int, optionalParams ...interface{}) ([]storage.OrderDTO, error) {
+func (s Service) GetOrderList(clientID int, optionalParams ...interface{}) ([]order.OrderDTO, error) {
 	orders, err := s.storage.ListAll()
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func (s Service) GetOrderList(clientID int, optionalParams ...interface{}) ([]st
 	}
 
 	if lastNOrders > 0 && lastNOrders < len(orders) {
-		ordersList := make([]storage.OrderDTO, 0)
+		ordersList := make([]order.OrderDTO, 0)
 		count := 0
 		for _, order := range orders {
 			if order.ClientID == clientID {
@@ -116,7 +116,7 @@ func (s Service) GetOrderList(clientID int, optionalParams ...interface{}) ([]st
 	}
 
 	if inPvz {
-		var pvzOrders []storage.OrderDTO
+		var pvzOrders []order.OrderDTO
 		for _, order := range orders {
 			if order.MetkaPVZ == "PVZ_UGAROV_RUSLAN" && order.ClientID == clientID {
 				pvzOrders = append(pvzOrders, order)
@@ -143,12 +143,12 @@ func (s Service) AcceptRefundFromClient(orderID int, clientID int) error {
 	return errors.New("прошло слишком много времени или товар выдавался не нашим ПВЗ")
 }
 
-func (s Service) GetRefundList(firstNumber int, numberOfOrders int) ([]storage.OrderDTO, error) {
+func (s Service) GetRefundList(firstNumber int, numberOfOrders int) ([]order.OrderDTO, error) {
 	all, err := s.storage.ListAll()
 	if err != nil {
 		return nil, err
 	}
-	ordersList := make([]storage.OrderDTO, 0)
+	ordersList := make([]order.OrderDTO, 0)
 	for _, order := range all {
 		if order.IsReturned {
 			ordersList = append(ordersList, order)
