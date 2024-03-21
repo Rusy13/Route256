@@ -60,15 +60,19 @@ func CreateRouter(implemetation Server1) *mux.Router {
 
 func (s *Server1) Create(w http.ResponseWriter, req *http.Request) {
 	fmt.Println("Внутренняя ошибка сервера:")
+	req.BasicAuth()
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		//w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Failed to read request body", http.StatusBadRequest)
 		return
 	}
+	defer req.Body.Close()
+
 	var unm addPvzRequest
 	if err = json.Unmarshal(body, &unm); err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		//w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Failed to unmarshal JSON", http.StatusBadRequest)
 		return
 	}
 
@@ -79,7 +83,8 @@ func (s *Server1) Create(w http.ResponseWriter, req *http.Request) {
 	}
 	id, err := s.Repo.Add(req.Context(), pvzRepo)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Failed to add pvz", http.StatusInternalServerError)
+		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -94,30 +99,28 @@ func (s *Server1) Create(w http.ResponseWriter, req *http.Request) {
 }
 
 func (s *Server1) GetByID(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("Внутренняя ошибка сервера:")
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid request parameter", http.StatusBadRequest)
 		return
 	}
 	keyInt, err := strconv.ParseInt(key, 10, 64)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
 		return
 	}
-	fmt.Println("yutu")
 	pvz, err := s.Repo.GetByID(req.Context(), keyInt)
 	if err != nil {
 		if errors.Is(err, repository.ErrObjectNotFound) {
-			w.WriteHeader(http.StatusNotFound)
+			http.Error(w, "Pvz not found", http.StatusNotFound)
 			return
 		}
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
-	fmt.Println(err)
 
 	pvzJson, _ := json.Marshal(pvz)
+	w.WriteHeader(http.StatusOK)
 	w.Write(pvzJson)
 }
 
@@ -125,19 +128,22 @@ func (s *Server1) Update(w http.ResponseWriter, req *http.Request) {
 	// Получаем ID из пути запроса
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid request parameter", http.StatusBadRequest)
+		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	keyInt, err := strconv.ParseInt(key, 10, 64)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Чтение тела запроса
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	defer req.Body.Close()
@@ -145,8 +151,9 @@ func (s *Server1) Update(w http.ResponseWriter, req *http.Request) {
 	// Декодирование JSON из тела запроса в структуру addPvzRequest
 	var unm addPvzRequest
 	if err = json.Unmarshal(body, &unm); err != nil {
-		fmt.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Failed to unmarshal JSON", http.StatusBadRequest)
+		//fmt.Println(err)
+		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -159,7 +166,8 @@ func (s *Server1) Update(w http.ResponseWriter, req *http.Request) {
 
 	// Обновление статьи в базе данных
 	if err := s.Repo.Update(req.Context(), keyInt, updatedPvz); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Failed to update pvz", http.StatusInternalServerError)
+		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -173,22 +181,25 @@ func (s *Server1) Delete(w http.ResponseWriter, req *http.Request) {
 	// Получаем ID из пути запроса
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid request parameter", http.StatusBadRequest)
+		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	keyInt, err := strconv.ParseInt(key, 10, 64)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
+		http.Error(w, "Invalid ID format", http.StatusBadRequest)
+		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
 	// Удаление статьи из базы данных
 	if err := s.Repo.Delete(req.Context(), keyInt); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, "Failed to delete pvz", http.StatusInternalServerError)
+		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	// Отправка ответа об успешном удалении
-	pvzJson := []byte("SUCCESS")
-	w.Write(pvzJson)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Successfully deleted"))
 }

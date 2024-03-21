@@ -4,9 +4,8 @@ import (
 	"HW1/pkg/db"
 	"HW1/pkg/repository"
 	"context"
-	"database/sql"
 	"errors"
-	"fmt"
+	"github.com/jackc/pgx/v4"
 )
 
 type PvzRepo struct {
@@ -25,14 +24,11 @@ func (r *PvzRepo) Add(ctx context.Context, pvz *repository.Pvz) (int64, error) {
 
 func (r *PvzRepo) GetByID(ctx context.Context, id int64) (*repository.Pvz, error) {
 	var a repository.Pvz
-	fmt.Println("pppppppp")
 	err := r.db.Get(ctx, &a, `SELECT id,pvzname,address,email FROM pvz where id=$1`, id)
 	if err != nil {
-		fmt.Println("err")
-		if errors.Is(err, sql.ErrNoRows) {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, repository.ErrObjectNotFound
 		}
-		fmt.Println(err)
 		return nil, err
 	}
 	return &a, nil

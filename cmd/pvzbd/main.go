@@ -9,6 +9,11 @@ import (
 	"net/http"
 )
 
+const (
+	securePort   = ":9000"
+	insecurePort = ":9001"
+)
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -22,8 +27,26 @@ func main() {
 	pvzRepo := postgresql.NewArticles(database)
 	implementation := api.Server1{Repo: pvzRepo}
 
-	http.Handle("/", api.CreateRouter(implementation))
-	if err := http.ListenAndServe(api.Port, nil); err != nil {
+	go serveSecure(implementation)
+	serveInsecure(implementation)
+}
+
+func serveSecure(implementation api.Server1) {
+	secureMux := http.NewServeMux()
+	secureMux.Handle("/", api.CreateRouter(implementation))
+
+	log.Printf("Listening on port %s...\n", securePort)
+	if err := http.ListenAndServeTLS(securePort, "/home/ubunto/Desktop/Route256/Route256DZ/HW1/api/server.crt", "/home/ubunto/Desktop/Route256/Route256DZ/HW1/api/server.key", secureMux); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func serveInsecure(implementation api.Server1) {
+	insecureMux := http.NewServeMux()
+	insecureMux.Handle("/", api.CreateRouter(implementation))
+
+	log.Printf("Listening on port %s...\n", insecurePort)
+	if err := http.ListenAndServe(insecurePort, insecureMux); err != nil {
 		log.Fatal(err)
 	}
 }
