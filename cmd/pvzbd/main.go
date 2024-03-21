@@ -7,6 +7,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -28,7 +29,7 @@ func main() {
 	implementation := api.Server1{Repo: pvzRepo}
 
 	go serveSecure(implementation)
-	serveInsecure(implementation)
+	serveInsecure()
 }
 
 func serveSecure(implementation api.Server1) {
@@ -41,12 +42,21 @@ func serveSecure(implementation api.Server1) {
 	}
 }
 
-func serveInsecure(implementation api.Server1) {
-	insecureMux := http.NewServeMux()
-	insecureMux.Handle("/", api.CreateRouter(implementation))
+func serveInsecure() {
+	redirectHandler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		hostParts := strings.Split(req.Host, ":")
+		host := hostParts[0]
+
+		// Формируем целевой URL с портом 9000 для HTTPS
+		target := "https://" + host + securePort + req.URL.Path
+		if len(req.URL.RawQuery) > 0 {
+			target += "?" + req.URL.RawQuery
+		}
+		http.Redirect(w, req, target, http.StatusTemporaryRedirect)
+	})
 
 	log.Printf("Listening on port %s...\n", insecurePort)
-	if err := http.ListenAndServe(insecurePort, insecureMux); err != nil {
+	if err := http.ListenAndServe(insecurePort, redirectHandler); err != nil {
 		log.Fatal(err)
 	}
 }
