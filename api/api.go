@@ -60,7 +60,6 @@ func CreateRouter(implemetation Server1) *mux.Router {
 }
 
 func (s *Server1) Create(w http.ResponseWriter, req *http.Request) {
-	fmt.Println("Внутренняя ошибка сервера:")
 	req.BasicAuth()
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
