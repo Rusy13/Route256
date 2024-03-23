@@ -1,5 +1,5 @@
 ifeq ($(POSTGRES_SETUP_TEST),)
-	POSTGRES_SETUP_TEST := user=postgres password=1111 dbname=Route host=localhost port=5432 sslmode=disable
+	POSTGRES_SETUP_TEST := user=postgres password=1111 dbname=Route host=db port=5432 sslmode=disable
 endif
 
 INTERNAL_PKG_PATH=$(CURDIR)/pkg

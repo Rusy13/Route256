@@ -6,7 +6,6 @@ import (
 	"HW1/pkg/db"
 	"HW1/pkg/repository/postgresql"
 	"context"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
@@ -20,13 +19,18 @@ const (
 )
 
 func main() {
+	//currentDir, err := os.Getwd()
+	//if err != nil {
+	//	log.Fatal("Failed to get current directory:", err)
+	//}
 
-	// Получаем путь к директории выше, где находится исполняемый файл
-	envPath := "/home/ubunto/Desktop/Route256/Route256DZ/HW1/.env"
-	// Загружаем переменные окружения из файла .env
-	if err := godotenv.Load(envPath); err != nil {
-		log.Fatal("No .env file found:", err)
-	}
+	// Формируем путь к файлу .env с использованием текущей директории
+	//envPath := filepath.Join(currentDir, "..", "..", ".env")
+	//envPath := "/home/ubunto/Desktop/Route256/Route256DZ/HW1/.env" ////////////////
+
+	//if err := godotenv.Load(envPath); err != nil {
+	//	log.Fatal("No .env file found:", err)
+	//}
 
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {
@@ -35,7 +39,7 @@ func main() {
 	config := config.StorageConfig{
 		Host:     os.Getenv("HOST"),
 		Port:     port,
-		Username: os.Getenv("USER"),
+		Username: os.Getenv("POSTGRES_USER"),
 		Password: os.Getenv("PASSWORD"),
 		Database: os.Getenv("DBNAME"),
 	}
@@ -61,7 +65,7 @@ func serveSecure(implementation api.Server1) {
 	secureMux.Handle("/", api.CreateRouter(implementation))
 
 	log.Printf("Listening on port %s...\n", securePort)
-	if err := http.ListenAndServeTLS(securePort, "/home/ubunto/Desktop/Route256/Route256DZ/HW1/api/server.crt", "/home/ubunto/Desktop/Route256/Route256DZ/HW1/api/server.key", secureMux); err != nil {
+	if err := http.ListenAndServeTLS(securePort, "api/server.crt", "api/server.key", secureMux); err != nil {
 		log.Fatal(err)
 	}
 }
