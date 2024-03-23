@@ -34,7 +34,7 @@ type addPvzResponse struct {
 
 func CreateRouter(implemetation Server1) *mux.Router {
 	router := mux.NewRouter()
-	router.Use(BasicAuth)
+	router.Use(BasicAuth, LoggingMiddleware)
 	router.HandleFunc("/pvz", func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodPost:
