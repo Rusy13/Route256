@@ -1,0 +1,4 @@
+api/server.crt
+api/server.key
+.env
+.database/postgres/data/
