@@ -1,8 +1,8 @@
 package postgresql
 
 import (
-	"HW1/pkg/db"
-	"HW1/pkg/repository"
+	"HW1/internal/storage/db"
+	"HW1/internal/storage/repository"
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v4"

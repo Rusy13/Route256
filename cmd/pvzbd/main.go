@@ -3,8 +3,8 @@ package main
 import (
 	"HW1/api"
 	config "HW1/internal/config"
-	"HW1/pkg/db"
-	"HW1/pkg/repository/postgresql"
+	"HW1/internal/storage/db"
+	"HW1/internal/storage/repository/postgresql"
 	"context"
 	"log"
 	"net/http"

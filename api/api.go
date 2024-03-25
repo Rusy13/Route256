@@ -1,8 +1,8 @@
 package api
 
 import (
-	"HW1/pkg/repository"
-	"HW1/pkg/repository/postgresql"
+	"HW1/internal/storage/repository"
+	"HW1/internal/storage/repository/postgresql"
 	"encoding/json"
 	"errors"
 	"fmt"
