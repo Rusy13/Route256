@@ -79,6 +79,8 @@ func (s *Storage) Create(input order.OrderInput) error {
 		IsIssued:    false, //выдан клиенту
 		IsReturned:  false, //возвращен
 		MetkaPVZ:    "PVZ_UGAROV_RUSLAN",
+		OrderCost:   input.OrderCost,
+		OrderWeight: input.OrderWeight,
 	}
 
 	all = append(all, newOrder)

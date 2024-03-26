@@ -48,8 +48,8 @@ func (cli *CLI) Run() {
 
 func (cli *CLI) Create(args []string) {
 	// Реализация логики для команды "create"
-	if len(args) < 3 {
-		fmt.Println("необходимо указать ID заказа, ID получателя и срок хранения")
+	if len(args) < 6 {
+		fmt.Println("необходимо указать ID заказа, ID получателя, срок хранения, цену и вес")
 		return
 	}
 	orderID, err := strconv.Atoi(args[0])
@@ -67,11 +67,25 @@ func (cli *CLI) Create(args []string) {
 		fmt.Println("неверный формат срока хранения:", err)
 		return
 	}
+
+	orderCost, err := strconv.Atoi(args[3])
+	if err != nil {
+		fmt.Println("неверный формат цены:", err)
+		return
+	}
+
+	orderWeight, err := strconv.Atoi(args[4])
+	if err != nil {
+		fmt.Println("неверный формат веса:", err)
+		return
+	}
+
+	orderPackage := args[5]
 	// Преобразование секунд в объект time.Duration
 	duration := time.Duration(storageTimeSec) * time.Second
 	// Создание временного объекта с текущим временем и добавлением продолжительности
 	storageTime := time.Now().Add(duration)
-	err = cli.service.AcceptOrderFromCourier(models.OrderInput{OrderID: orderID, ClientID: clientID, StorageTime: storageTime})
+	err = cli.service.AcceptOrderFromCourier(models.OrderInput{OrderID: orderID, ClientID: clientID, StorageTime: storageTime, OrderCost: orderCost, OrderWeight: orderWeight}, orderPackage)
 	if err != nil {
 		fmt.Println("ошибка при принятии заказа:", err)
 	} else {

@@ -5,6 +5,7 @@ import (
 	"HW1/internal/storage/order"
 	"errors"
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -20,14 +21,47 @@ type Service struct {
 	storage StorageI
 }
 
+type PackageParams struct {
+	Price          int
+	Name           string
+	MaxOrderWeight int
+}
+
+type PackageType map[string]PackageParams
+
+var packages = PackageType{
+	"packet": {Price: 5, Name: "packet", MaxOrderWeight: 10},
+	"box":    {Price: 20, Name: "box", MaxOrderWeight: 30},
+	"tape":   {Price: 1, Name: "tape", MaxOrderWeight: math.MaxInt64},
+}
+
+func GetPackageParams(name string) (PackageParams, error) {
+	params, ok := packages[name]
+	if !ok {
+		return PackageParams{}, fmt.Errorf("упаковка %s не найдена", name)
+	}
+	return params, nil
+}
+
 func New(s StorageI) Service {
 	return Service{storage: s}
 }
 
-func (s Service) AcceptOrderFromCourier(input order2.OrderInput) error {
+func (s Service) AcceptOrderFromCourier(input order2.OrderInput, packageName string) error {
 	if input.StorageTime.Before(time.Now()) {
 		return errors.New("срок хранения в прошлом")
 	}
+	packageParams, err := GetPackageParams(packageName)
+
+	if packageParams.MaxOrderWeight < input.OrderWeight {
+		return fmt.Errorf("вес заказа для упаковки не подходит")
+	}
+
+	if err != nil {
+		return fmt.Errorf("ошибка при получении параметров упаковки: %v", err)
+	}
+
+	input.OrderCost += packageParams.Price
 	return s.storage.Create(input)
 }
 

@@ -15,6 +15,8 @@ type OrderInput struct {
 	OrderID     int       `json:"orderId"`
 	ClientID    int       `json:"clientId"`
 	StorageTime time.Time `json:"storageTime"`
+	OrderCost   int       `json:"storageCost"`
+	OrderWeight int       `json:"storageWeight"`
 }
 
 // IssueOrdersInput используется для выдачи заказов клиенту

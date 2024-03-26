@@ -11,4 +11,6 @@ type OrderDTO struct {
 	IsDeleted   bool //возврат курьеру
 	MetkaPVZ    string
 	IssuedDate  time.Time
+	OrderCost   int
+	OrderWeight int
 }
