@@ -59,7 +59,6 @@ func (s *Storage) ListAll() ([]OrderDTO, error) {
 	return s.orders, nil // Просто возвращаем данные, уже прочитанные из файла
 }
 
-// Create creates order
 func (s *Storage) Create(input order.OrderInput) error {
 	all, err := s.ListAll()
 	if err != nil {
@@ -104,7 +103,6 @@ func writeBytes(Orders []OrderDTO) error {
 	return nil
 }
 
-// Delete order
 func (s *Storage) Delete(id int) error {
 	all, err := s.ListAll()
 	if err != nil {
@@ -123,7 +121,6 @@ func (s *Storage) Delete(id int) error {
 
 }
 
-// Refund order
 func (s *Storage) Refund(clientID int, orderID int) error {
 	all, err := s.ListAll()
 	if err != nil {
