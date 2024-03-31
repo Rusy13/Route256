@@ -2,7 +2,7 @@ package order
 
 import (
 	models "HW1/internal/model/order"
-	"HW1/internal/service/order"
+	"HW1/internal/service/orderserv"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,10 +11,10 @@ import (
 )
 
 type CLI struct {
-	service order.Service
+	service orderserv.Service
 }
 
-func NewCLI(serv order.Service) *CLI {
+func NewCLI(serv orderserv.Service) *CLI {
 	return &CLI{service: serv}
 }
 
@@ -48,7 +48,7 @@ func (cli *CLI) Run() {
 
 func (cli *CLI) Create(args []string) {
 	if len(args) < 6 {
-		fmt.Println("необходимо указать ID заказа, ID получателя, срок хранения, цену и вес")
+		fmt.Println("необходимо указать ID заказа, ID получателя, срок хранения, цену, вес и тип обертки")
 		return
 	}
 	orderID, err := strconv.Atoi(args[0])

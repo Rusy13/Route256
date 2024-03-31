@@ -24,3 +24,22 @@ type IssueOrdersInput struct {
 	ClientID int   `json:"clientId"`
 	OrderIDs []int `json:"orderIds"`
 }
+
+// PackageType определяет тип упаковки
+type PackageType string
+
+const (
+	Box    PackageType = "BOX"
+	Packet PackageType = "PACKET"
+	Tape   PackageType = "TAPE"
+)
+
+type PackageParams struct {
+	Price          int
+	Name           string
+	MaxOrderWeight int
+}
+
+type Packager interface {
+	GetParams() PackageParams
+}

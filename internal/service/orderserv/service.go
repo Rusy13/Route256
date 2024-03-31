@@ -1,11 +1,10 @@
-package order
+package orderserv
 
 import (
 	order2 "HW1/internal/model/order"
 	"HW1/internal/storage/order"
 	"errors"
 	"fmt"
-	"math"
 	"time"
 )
 
@@ -21,26 +20,17 @@ type Service struct {
 	storage StorageI
 }
 
-type PackageParams struct {
-	Price          int
-	Name           string
-	MaxOrderWeight int
-}
-
-type PackageType map[string]PackageParams
-
-var packages = PackageType{
-	"packet": {Price: 5, Name: "packet", MaxOrderWeight: 10},
-	"box":    {Price: 20, Name: "box", MaxOrderWeight: 30},
-	"tape":   {Price: 1, Name: "tape", MaxOrderWeight: math.MaxInt64},
-}
-
-func GetPackageParams(name string) (PackageParams, error) {
-	params, ok := packages[name]
-	if !ok {
-		return PackageParams{}, fmt.Errorf("упаковка %s не найдена", name)
+func GetPackageParams(name order2.PackageType) (order2.PackageParams, error) {
+	switch name {
+	case order2.Box:
+		return BoxParams{}.GetParams(), nil
+	case order2.Packet:
+		return PacketParams{}.GetParams(), nil
+	case order2.Tape:
+		return TapeParams{}.GetParams(), nil
+	default:
+		return order2.PackageParams{}, fmt.Errorf("упаковка %s не найдена", name)
 	}
-	return params, nil
 }
 
 func New(s StorageI) Service {
@@ -51,7 +41,8 @@ func (s Service) AcceptOrderFromCourier(input order2.OrderInput, packageName str
 	if input.StorageTime.Before(time.Now()) {
 		return errors.New("срок хранения в прошлом")
 	}
-	packageParams, err := GetPackageParams(packageName)
+	packageType := order2.PackageType(packageName)
+	packageParams, err := GetPackageParams(packageType)
 
 	if packageParams.MaxOrderWeight < input.OrderWeight {
 		return fmt.Errorf("вес заказа для упаковки не подходит")
