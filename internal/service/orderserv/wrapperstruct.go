@@ -1,36 +1,31 @@
 package orderserv
 
-import (
-	order2 "HW1/internal/model/order"
-	"math"
-)
-
 type PacketParams struct{}
 
-func (p PacketParams) GetParams() order2.PackageParams {
-	return order2.PackageParams{
-		Price:          5,
-		Name:           "packet",
-		MaxOrderWeight: 10,
-	}
+func (p PacketParams) GetPrice() int {
+	return 5
+}
+
+func (p PacketParams) Validate(weight int) bool {
+	return weight <= 10
 }
 
 type BoxParams struct{}
 
-func (b BoxParams) GetParams() order2.PackageParams {
-	return order2.PackageParams{
-		Price:          20,
-		Name:           "box",
-		MaxOrderWeight: 30,
-	}
+func (b BoxParams) GetPrice() int {
+	return 30
+}
+
+func (b BoxParams) Validate(weight int) bool {
+	return weight <= 30
 }
 
 type TapeParams struct{}
 
-func (t TapeParams) GetParams() order2.PackageParams {
-	return order2.PackageParams{
-		Price:          1,
-		Name:           "tape",
-		MaxOrderWeight: math.MaxInt64,
-	}
+func (t TapeParams) GetPrice() int {
+	return 1
+}
+
+func (t TapeParams) Validate(weight int) bool {
+	return true
 }

@@ -20,16 +20,16 @@ type Service struct {
 	storage StorageI
 }
 
-func GetPackageParams(name order2.PackageType) (order2.PackageParams, error) {
+func GetPackageParams(name order2.PackageType) (order2.Packager, error) {
 	switch name {
 	case order2.Box:
-		return BoxParams{}.GetParams(), nil
+		return BoxParams{}, nil
 	case order2.Packet:
-		return PacketParams{}.GetParams(), nil
+		return PacketParams{}, nil
 	case order2.Tape:
-		return TapeParams{}.GetParams(), nil
+		return TapeParams{}, nil
 	default:
-		return order2.PackageParams{}, fmt.Errorf("упаковка %s не найдена", name)
+		return nil, fmt.Errorf("упаковка %s не найдена", name)
 	}
 }
 
@@ -42,17 +42,17 @@ func (s Service) AcceptOrderFromCourier(input order2.OrderInput, packageName str
 		return errors.New("срок хранения в прошлом")
 	}
 	packageType := order2.PackageType(packageName)
-	packageParams, err := GetPackageParams(packageType)
-
-	if packageParams.MaxOrderWeight < input.OrderWeight {
-		return fmt.Errorf("вес заказа для упаковки не подходит")
-	}
+	packager, err := GetPackageParams(packageType)
 
 	if err != nil {
 		return fmt.Errorf("ошибка при получении параметров упаковки: %v", err)
 	}
 
-	input.OrderCost += packageParams.Price
+	if !packager.Validate(input.OrderWeight) {
+		return fmt.Errorf("вес заказа для упаковки не подходит")
+	}
+
+	input.OrderCost += packager.GetPrice()
 	return s.storage.Create(input)
 }
 

@@ -41,5 +41,6 @@ type PackageParams struct {
 }
 
 type Packager interface {
-	GetParams() PackageParams
+	Validate(weight int) bool
+	GetPrice() int
 }
