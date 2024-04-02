@@ -9,10 +9,10 @@ import (
 )
 
 type PvzRepo struct {
-	db *db.Database
+	db db.DBops
 }
 
-func NewArticles(database *db.Database) *PvzRepo {
+func NewArticles(database db.DBops) *PvzRepo {
 	return &PvzRepo{db: database}
 }
 

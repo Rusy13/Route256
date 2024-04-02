@@ -2,7 +2,6 @@ package api
 
 import (
 	"HW1/internal/storage/repository"
-	"HW1/internal/storage/repository/postgresql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,7 +15,7 @@ const Port = ":9000"
 const queryParamKey = "key"
 
 type Server1 struct {
-	Repo *postgresql.PvzRepo
+	Repo repository.PvzRepo
 }
 
 type addPvzRequest struct {
