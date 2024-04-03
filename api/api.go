@@ -37,7 +37,7 @@ func CreateRouter(implemetation Server1) *mux.Router {
 	router.HandleFunc("/pvz", func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodPost:
-			implemetation.Create(w, req)
+			implemetation.CreatePvz(w, req)
 		default:
 			fmt.Println("error")
 		}
@@ -46,11 +46,11 @@ func CreateRouter(implemetation Server1) *mux.Router {
 	router.HandleFunc(fmt.Sprintf("/pvz/{%s:[0-9]+}", queryParamKey), func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
-			implemetation.GetByID(w, req)
+			implemetation.GetPVZByID(w, req)
 		case http.MethodDelete:
-			implemetation.Delete(w, req)
+			implemetation.DeletePvz(w, req)
 		case http.MethodPut:
-			implemetation.Update(w, req)
+			implemetation.UpdatePvz(w, req)
 		default:
 			fmt.Println("error")
 		}
@@ -58,7 +58,7 @@ func CreateRouter(implemetation Server1) *mux.Router {
 	return router
 }
 
-func (s *Server1) Create(w http.ResponseWriter, req *http.Request) {
+func (s *Server1) CreatePvz(w http.ResponseWriter, req *http.Request) {
 	req.BasicAuth()
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
@@ -97,7 +97,7 @@ func (s *Server1) Create(w http.ResponseWriter, req *http.Request) {
 	w.Write(pvzJson)
 }
 
-func (s *Server1) GetByID(w http.ResponseWriter, req *http.Request) {
+func (s *Server1) GetPVZByID(w http.ResponseWriter, req *http.Request) {
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
 		http.Error(w, "Invalid request parameter", http.StatusBadRequest)
@@ -123,7 +123,7 @@ func (s *Server1) GetByID(w http.ResponseWriter, req *http.Request) {
 	w.Write(pvzJson)
 }
 
-func (s *Server1) Update(w http.ResponseWriter, req *http.Request) {
+func (s *Server1) UpdatePvz(w http.ResponseWriter, req *http.Request) {
 	// Получаем ID из пути запроса
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
@@ -176,7 +176,7 @@ func (s *Server1) Update(w http.ResponseWriter, req *http.Request) {
 	w.Write(pvzJson)
 }
 
-func (s *Server1) Delete(w http.ResponseWriter, req *http.Request) {
+func (s *Server1) DeletePvz(w http.ResponseWriter, req *http.Request) {
 	// Получаем ID из пути запроса
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {

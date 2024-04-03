@@ -1,11 +1,12 @@
+//go:generate mockgen -source ./database.go -destination=./mocks/databaase.go -package=mock_database
 package db
 
 import (
 	"context"
+	"github.com/jackc/pgx/v4"
 
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
-	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
