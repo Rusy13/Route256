@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -43,42 +44,6 @@ func Test_validateGetByID(t *testing.T) {
 		result := validateGetByID(-1)
 		assert.False(t, result)
 	})
-}
-
-func TestCreate(t *testing.T) {
-	t.Parallel()
-
-	// Инициализация контроллера mock
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	// Создание мока для вашего репозитория
-	mockRepo := mock.NewMockPvzRepo(ctrl)
-
-	// Создание экземпляра сервера
-	server := Server1{Repo: mockRepo}
-
-	// Подготовка входных данных
-	pvzRepo := &repository.Pvz{
-		PvzName: "TestPvz",
-		Address: "TestAddress",
-		Email:   "test@example.com",
-	}
-
-	// Ожидаемый результат
-	expectedID := int64(12345)
-	expectedJSON := []byte(`{"id":12345,"pvzname":"TestPvz","address":"TestAddress","email":"test@example.com"}`)
-	expectedStatus := http.StatusOK
-
-	// Настройка мока
-	mockRepo.EXPECT().Add(gomock.Any(), pvzRepo).Return(expectedID, nil)
-
-	// Выполнение функции
-	pvzJson, status := server.create(context.Background(), pvzRepo)
-
-	// Проверка результата
-	assert.Equal(t, expectedStatus, status)
-	assert.Equal(t, expectedJSON, pvzJson)
 }
 
 func TestUpdatePvz(t *testing.T) {
@@ -154,4 +119,90 @@ func TestDeletePvz(t *testing.T) {
 	// Проверяем тело ответа
 	expected := "Successfully deleted"
 	assert.Equal(t, expected, rr.Body.String())
+}
+
+// -----------------------------------------------------------------
+
+func TestCreatePvzHandler(t *testing.T) {
+	t.Parallel()
+
+	// Подготовка тестовых данных
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+
+	mockRepo := mock.NewMockPvzRepo(mockCtrl)
+
+	srv := &Server1{
+		Repo: mockRepo,
+	}
+
+	handler := http.HandlerFunc(srv.CreatePvz)
+
+	testCases := []struct {
+		name                 string
+		requestBody          []byte
+		mockRepoExpect       func()
+		expectedStatusCode   int
+		expectedResponseBody string
+	}{
+		{
+			name:        "Valid request",
+			requestBody: []byte(`{"PvzName":"PVZ 1","Address":"123 Main Street","Email":"pvz1@example.com"}`),
+			mockRepoExpect: func() {
+				mockRepo.EXPECT().Add(gomock.Any(), &repository.Pvz{
+					PvzName: "PVZ 1",
+					Address: "123 Main Street",
+					Email:   "pvz1@example.com",
+				}).Return(int64(1), nil)
+			},
+			expectedStatusCode:   http.StatusOK,
+			expectedResponseBody: `{"id":1,"pvzname":"PVZ 1","address":"123 Main Street","email":"pvz1@example.com"}`,
+		},
+		{
+			name:                 "Failed to unmarshal JSON",
+			requestBody:          []byte(`invalid json`),
+			mockRepoExpect:       func() {},
+			expectedStatusCode:   http.StatusBadRequest,
+			expectedResponseBody: "Failed to unmarshal JSON\n",
+		},
+		{
+			name:        "Failed to add pvz",
+			requestBody: []byte(`{"PvzName":"PVZ 1","Address":"123 Main Street","Email":"pvz1@example.com"}`),
+			mockRepoExpect: func() {
+				mockRepo.EXPECT().Add(gomock.Any(), &repository.Pvz{
+					PvzName: "PVZ 1",
+					Address: "123 Main Street",
+					Email:   "pvz1@example.com",
+				}).Return(int64(0), errors.New("internal server error"))
+			},
+			expectedStatusCode:   http.StatusInternalServerError,
+			expectedResponseBody: "Failed to add pvz\n",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req, err := http.NewRequest(http.MethodPost, "/pvz", bytes.NewReader(tc.requestBody))
+			if err != nil {
+				t.Fatalf("failed to create request: %v", err)
+			}
+
+			if tc.mockRepoExpect != nil {
+				tc.mockRepoExpect()
+			}
+
+			rr := httptest.NewRecorder()
+			handler.ServeHTTP(rr, req)
+
+			if status := rr.Code; status != tc.expectedStatusCode {
+				t.Errorf("handler returned wrong status code: got %v want %v",
+					status, tc.expectedStatusCode)
+			}
+
+			if rr.Body.String() != tc.expectedResponseBody {
+				t.Errorf("handler returned unexpected body: got %v want %v",
+					rr.Body.String(), tc.expectedResponseBody)
+			}
+		})
+	}
 }

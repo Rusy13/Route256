@@ -43,7 +43,6 @@ func CreateRouter(implemetation Server1) *mux.Router {
 			fmt.Println("error")
 		}
 	})
-
 	router.HandleFunc(fmt.Sprintf("/pvz/{%s:[0-9]+}", queryParamKey), func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
@@ -81,29 +80,11 @@ func (s *Server1) CreatePvz(w http.ResponseWriter, req *http.Request) {
 		Address: unm.Address,
 		Email:   unm.Email,
 	}
-	pvzJson, _ := s.create(req.Context(), pvzRepo)
-	w.Write(pvzJson)
-}
-
-func validateCreate(key int64) bool {
-	if key <= 0 {
-		return false
-	}
-	return true
-}
-
-func (s *Server1) create(ctx context.Context, pvzRepo *repository.Pvz) ([]byte, int) {
-	id, err := s.Repo.Add(ctx, pvzRepo)
+	id, err := s.Repo.Add(req.Context(), pvzRepo)
 	if err != nil {
-		return nil, http.StatusInternalServerError
+		http.Error(w, "Failed to add pvz", http.StatusInternalServerError)
 		//w.WriteHeader(http.StatusInternalServerError)
-	}
-
-	if err != nil {
-		if errors.Is(err, repository.ErrObjectNotFound) {
-			return nil, http.StatusNotFound
-		}
-		return nil, http.StatusInternalServerError
+		return
 	}
 
 	resp := &addPvzResponse{
@@ -113,8 +94,7 @@ func (s *Server1) create(ctx context.Context, pvzRepo *repository.Pvz) ([]byte, 
 		Email:   pvzRepo.Email,
 	}
 	pvzJson, _ := json.Marshal(resp)
-
-	return pvzJson, http.StatusOK
+	w.Write(pvzJson)
 }
 
 // ------------------------------------------------------------------------------------
@@ -219,3 +199,5 @@ func (s *Server1) DeletePvz(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Successfully deleted"))
 }
+
+//----------------------------------------------------------------------------
