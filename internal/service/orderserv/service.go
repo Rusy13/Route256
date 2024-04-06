@@ -1,4 +1,4 @@
-package order
+package orderserv
 
 import (
 	order2 "HW1/internal/model/order"
@@ -20,14 +20,39 @@ type Service struct {
 	storage StorageI
 }
 
+func GetPackageParams(name order2.PackageType) (order2.Packager, error) {
+	switch name {
+	case order2.Box:
+		return BoxParams{}, nil
+	case order2.Packet:
+		return PacketParams{}, nil
+	case order2.Tape:
+		return TapeParams{}, nil
+	default:
+		return nil, fmt.Errorf("упаковка %s не найдена", name)
+	}
+}
+
 func New(s StorageI) Service {
 	return Service{storage: s}
 }
 
-func (s Service) AcceptOrderFromCourier(input order2.OrderInput) error {
+func (s Service) AcceptOrderFromCourier(input order2.OrderInput, packageName string) error {
 	if input.StorageTime.Before(time.Now()) {
 		return errors.New("срок хранения в прошлом")
 	}
+	packageType := order2.PackageType(packageName)
+	packager, err := GetPackageParams(packageType)
+
+	if err != nil {
+		return fmt.Errorf("ошибка при получении параметров упаковки: %v", err)
+	}
+
+	if !packager.Validate(input.OrderWeight) {
+		return fmt.Errorf("вес заказа для упаковки не подходит")
+	}
+
+	input.OrderCost += packager.GetPrice()
 	return s.storage.Create(input)
 }
 

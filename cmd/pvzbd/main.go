@@ -19,18 +19,6 @@ const (
 )
 
 func main() {
-	//currentDir, err := os.Getwd()
-	//if err != nil {
-	//	log.Fatal("Failed to get current directory:", err)
-	//}
-
-	// Формируем путь к файлу .env с использованием текущей директории
-	//envPath := filepath.Join(currentDir, "..", "..", ".env")
-	//envPath := "/home/ubunto/Desktop/Route256/Route256DZ/HW1/.env" ////////////////
-
-	//if err := godotenv.Load(envPath); err != nil {
-	//	log.Fatal("No .env file found:", err)
-	//}
 
 	port, err := strconv.Atoi(os.Getenv("PORT"))
 	if err != nil {

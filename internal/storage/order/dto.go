@@ -1,6 +1,8 @@
 package order
 
-import "time"
+import (
+	"time"
+)
 
 type OrderDTO struct {
 	OrderID     int
@@ -11,4 +13,6 @@ type OrderDTO struct {
 	IsDeleted   bool //возврат курьеру
 	MetkaPVZ    string
 	IssuedDate  time.Time
+	OrderCost   int
+	OrderWeight int
 }

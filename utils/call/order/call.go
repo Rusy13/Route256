@@ -2,7 +2,7 @@ package order
 
 import (
 	models "HW1/internal/model/order"
-	"HW1/internal/service/order"
+	"HW1/internal/service/orderserv"
 	"fmt"
 	"os"
 	"strconv"
@@ -11,10 +11,10 @@ import (
 )
 
 type CLI struct {
-	service order.Service
+	service orderserv.Service
 }
 
-func NewCLI(serv order.Service) *CLI {
+func NewCLI(serv orderserv.Service) *CLI {
 	return &CLI{service: serv}
 }
 
@@ -47,9 +47,8 @@ func (cli *CLI) Run() {
 }
 
 func (cli *CLI) Create(args []string) {
-	// Реализация логики для команды "create"
-	if len(args) < 3 {
-		fmt.Println("необходимо указать ID заказа, ID получателя и срок хранения")
+	if len(args) < 6 {
+		fmt.Println("необходимо указать ID заказа, ID получателя, срок хранения, цену, вес и тип обертки")
 		return
 	}
 	orderID, err := strconv.Atoi(args[0])
@@ -67,11 +66,24 @@ func (cli *CLI) Create(args []string) {
 		fmt.Println("неверный формат срока хранения:", err)
 		return
 	}
+
+	orderCost, err := strconv.Atoi(args[3])
+	if err != nil {
+		fmt.Println("неверный формат цены:", err)
+		return
+	}
+
+	orderWeight, err := strconv.Atoi(args[4])
+	if err != nil {
+		fmt.Println("неверный формат веса:", err)
+		return
+	}
+
+	orderPackage := args[5]
 	// Преобразование секунд в объект time.Duration
 	duration := time.Duration(storageTimeSec) * time.Second
-	// Создание временного объекта с текущим временем и добавлением продолжительности
 	storageTime := time.Now().Add(duration)
-	err = cli.service.AcceptOrderFromCourier(models.OrderInput{OrderID: orderID, ClientID: clientID, StorageTime: storageTime})
+	err = cli.service.AcceptOrderFromCourier(models.OrderInput{OrderID: orderID, ClientID: clientID, StorageTime: storageTime, OrderCost: orderCost, OrderWeight: orderWeight}, orderPackage)
 	if err != nil {
 		fmt.Println("ошибка при принятии заказа:", err)
 	} else {
@@ -80,7 +92,6 @@ func (cli *CLI) Create(args []string) {
 }
 
 func (cli *CLI) Refund(args []string) {
-	// Реализация логики для команды "refund"
 	if len(args) < 1 {
 		fmt.Println("необходимо указать ID заказа для возврата")
 		return
@@ -99,7 +110,6 @@ func (cli *CLI) Refund(args []string) {
 }
 
 func (cli *CLI) Issue(args []string) {
-	// Реализация логики для команды "issue"
 	if len(args) < 1 {
 		fmt.Println("необходимо указать ID заказов для выдачи")
 		return
@@ -122,7 +132,6 @@ func (cli *CLI) Issue(args []string) {
 }
 
 func (cli *CLI) List(args []string) {
-	// Реализация логики для команды "list"
 	if len(args) < 1 {
 		fmt.Println("необходимо указать ID пользователя")
 		return
@@ -160,7 +169,6 @@ func (cli *CLI) List(args []string) {
 }
 
 func (cli *CLI) AcceptRefund(args []string) {
-	// Реализация логики для команды "acceptrefund"
 	if len(args) < 2 {
 		fmt.Println("необходимо указать ID пользователя и ID заказа для возврата")
 		return
@@ -184,7 +192,6 @@ func (cli *CLI) AcceptRefund(args []string) {
 }
 
 func (cli *CLI) RefundList(args []string) {
-	// Реализация логики для команды "refundlist"
 	if len(args) < 2 {
 		fmt.Println("необходимо указать номер начального заказа и количество заказов")
 		return
@@ -211,7 +218,6 @@ func (cli *CLI) RefundList(args []string) {
 }
 
 func (cli *CLI) Help() {
-	// Реализация вывода справки
 	printHelp()
 }
 

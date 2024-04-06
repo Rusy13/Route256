@@ -1,7 +1,7 @@
 package main
 
 import (
-	orderService "HW1/internal/service/order"
+	orderService "HW1/internal/service/orderserv"
 	"HW1/internal/storage/order"
 	orderCall "HW1/utils/call/order"
 	"log"
