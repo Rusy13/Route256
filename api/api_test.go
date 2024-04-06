@@ -94,10 +94,7 @@ func TestDeletePvz(t *testing.T) {
 		Repo: mockRepo,
 	}
 	router := CreateRouter(server)
-
-	// Устанавливаем ожидание вызова метода Delete у мок-репозитория
 	mockRepo.EXPECT().Delete(gomock.Any(), int64(1)).Return(nil)
-	// Создаем запрос DELETE с установленным параметром ключа в URL
 	req, err := http.NewRequest("DELETE", "/pvz/1", bytes.NewBuffer([]byte{}))
 
 	if err != nil {
@@ -105,18 +102,14 @@ func TestDeletePvz(t *testing.T) {
 	}
 	req.SetBasicAuth("rus", "1234")
 
-	// Создаем тестовый Recorder для записи ответа
 	rr := httptest.NewRecorder()
 
-	// Маршрутизация запроса
 	req.Header.Set("Content-Type", "application/json")
 
 	router.ServeHTTP(rr, req)
 
-	// Проверяем статус код ответа
 	assert.Equal(t, http.StatusOK, rr.Code)
 
-	// Проверяем тело ответа
 	expected := "Successfully deleted"
 	assert.Equal(t, expected, rr.Body.String())
 }
@@ -194,8 +187,11 @@ func TestCreatePvzHandler(t *testing.T) {
 			}
 
 			rr := httptest.NewRecorder()
+
+			//act
 			handler.ServeHTTP(rr, req)
 
+			//assert
 			if status := rr.Code; status != tc.expectedStatusCode {
 				t.Errorf("handler returned wrong status code: got %v want %v",
 					status, tc.expectedStatusCode)

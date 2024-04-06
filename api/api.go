@@ -165,6 +165,7 @@ func (s *Server1) UpdatePvz(w http.ResponseWriter, req *http.Request) {
 	}
 
 	updatedPvz := &repository.Pvz{
+		ID:      int64(keyInt),
 		PvzName: unm.PvzName,
 		Address: unm.Address,
 		Email:   unm.Email,
