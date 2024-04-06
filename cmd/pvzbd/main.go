@@ -1,10 +1,10 @@
 package main
 
 import (
-	"HW1/api"
+	api "HW1/api"
 	config "HW1/internal/config"
 	"HW1/internal/storage/db"
-	"HW1/internal/storage/repository/postgresql"
+	pp "HW1/internal/storage/repository/postgresql"
 	"context"
 	"log"
 	"net/http"
@@ -41,7 +41,7 @@ func main() {
 	}
 	defer database.GetPool(ctx).Close()
 
-	pvzRepo := postgresql.NewArticles(database)
+	pvzRepo := pp.NewPvzRepo(database)
 	implementation := api.Server1{Repo: pvzRepo}
 
 	go serveSecure(implementation)

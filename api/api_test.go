@@ -30,7 +30,7 @@ func Test_GetByID(t *testing.T) {
 		result, status := s.srv.get(ctx, id)
 
 		require.Equal(t, http.StatusOK, status)
-		assert.Equal(t, "{\"ID\":50001,\"PvzName\":\"asd\",\"Address\":\"asd\",\"Email\":\"asd\"}", string(result))
+		assert.Equal(t, "{\"ID\":1,\"PvzName\":\"ExamplePvz1\",\"Address\":\"ExampleAddress\",\"Email\":\"example@example.com\"}", string(result))
 	})
 }
 
@@ -120,6 +120,8 @@ func TestDeletePvz(t *testing.T) {
 	expected := "Successfully deleted"
 	assert.Equal(t, expected, rr.Body.String())
 }
+
+// -----------------------------------------------------------------
 
 // -----------------------------------------------------------------
 

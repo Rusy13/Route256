@@ -11,11 +11,12 @@ services:
     depends_on:
       - db
     environment:
-      - HOST=hw1_db_1
+      - HOST=db
       - PORT=5432
       - POSTGRES_USER=postgres
       - PASSWORD=1111
       - DBNAME=Route
+
 
   db:
     restart: always
@@ -28,3 +29,14 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 1111
       POSTGRES_DB: Route
+
+
+  test-db:
+    restart: always
+    image: postgres:latest
+    ports:
+      - "5433:5432"  # Используем другой порт для тестовой базы данных
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+      POSTGRES_DB: TestRoute  # Имя тестовой базы данных может отличаться

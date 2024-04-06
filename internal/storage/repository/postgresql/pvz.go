@@ -12,7 +12,7 @@ type PvzRepo struct {
 	db db.DBops
 }
 
-func NewArticles(database db.DBops) *PvzRepo {
+func NewPvzRepo(database db.DBops) *PvzRepo {
 	return &PvzRepo{db: database}
 }
 

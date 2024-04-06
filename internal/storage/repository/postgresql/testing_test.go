@@ -13,10 +13,10 @@ type pvzRepoFixtures struct {
 	mockDB *mock_database.MockDBops
 }
 
-func setUp(t *testing.T) pvzRepoFixtures {
+func SetUp(t *testing.T) pvzRepoFixtures {
 	ctrl := gomock.NewController(t)
 	mockDB := mock_database.NewMockDBops(ctrl)
-	repo := NewArticles(mockDB)
+	repo := NewPvzRepo(mockDB)
 	return pvzRepoFixtures{
 		ctrl:   ctrl,
 		repo:   repo,
@@ -24,6 +24,6 @@ func setUp(t *testing.T) pvzRepoFixtures {
 	}
 }
 
-func (a *pvzRepoFixtures) tearDown() {
+func (a *pvzRepoFixtures) TearDown() {
 	a.ctrl.Finish()
 }

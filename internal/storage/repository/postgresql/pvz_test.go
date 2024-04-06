@@ -20,8 +20,8 @@ func Test_postgresDBRepo_GetByID(t *testing.T) {
 		t.Parallel()
 		// arrange
 
-		s := setUp(t)
-		defer s.tearDown()
+		s := SetUp(t)
+		defer s.TearDown()
 		s.mockDB.EXPECT().Get(gomock.Any(), gomock.Any(), "SELECT id,pvzname,address,email FROM pvz where id=$1", gomock.Any()).Return(nil)
 		// act
 		reservation, err := s.repo.GetByID(context.Background(), int64(id))
@@ -36,8 +36,8 @@ func Test_postgresDBRepo_GetByID(t *testing.T) {
 		t.Run("not found", func(t *testing.T) {
 			t.Parallel()
 			// arrange
-			s := setUp(t)
-			defer s.tearDown()
+			s := SetUp(t)
+			defer s.TearDown()
 
 			s.mockDB.EXPECT().Get(gomock.Any(), gomock.Any(), "SELECT id,pvzname,address,email FROM pvz where id=$1", gomock.Any()).Return(repository.ErrObjectNotFound)
 
@@ -52,8 +52,8 @@ func Test_postgresDBRepo_GetByID(t *testing.T) {
 		t.Run("internal error", func(t *testing.T) {
 			t.Parallel()
 			// arrange
-			s := setUp(t)
-			defer s.tearDown()
+			s := SetUp(t)
+			defer s.TearDown()
 
 			s.mockDB.EXPECT().Get(gomock.Any(), gomock.Any(), "SELECT id,pvzname,address,email FROM pvz where id=$1", gomock.Any()).Return(assert.AnError)
 
@@ -67,9 +67,6 @@ func Test_postgresDBRepo_GetByID(t *testing.T) {
 	})
 }
 
-// Add(ctx context.Context, pvz *Pvz) (int64, error)
-// Update(ctx context.Context, id int64, pvz *Pvz) error
-// Delete(ctx context.Context, id int64) error
 func Test_Delete(t *testing.T) {
 	var (
 		id int64 = 1
@@ -79,8 +76,8 @@ func Test_Delete(t *testing.T) {
 		t.Parallel()
 		// arrange
 
-		s := setUp(t)
-		defer s.tearDown()
+		s := SetUp(t)
+		defer s.TearDown()
 		s.mockDB.EXPECT().Exec(gomock.Any(), "DELETE FROM pvz WHERE id=$1", gomock.Any()).Return(nil, nil)
 		// act
 		reservation := s.repo.Delete(context.Background(), int64(id))
@@ -95,8 +92,8 @@ func Test_Delete(t *testing.T) {
 		t.Run("not found", func(t *testing.T) {
 			t.Parallel()
 			// arrange
-			s := setUp(t)
-			defer s.tearDown()
+			s := SetUp(t)
+			defer s.TearDown()
 
 			s.mockDB.EXPECT().Exec(gomock.Any(), "DELETE FROM pvz WHERE id=$1", gomock.Any()).Return(nil, repository.ErrObjectNotFound)
 
@@ -111,8 +108,8 @@ func Test_Delete(t *testing.T) {
 		t.Run("internal error", func(t *testing.T) {
 			t.Parallel()
 			// arrange
-			s := setUp(t)
-			defer s.tearDown()
+			s := SetUp(t)
+			defer s.TearDown()
 
 			s.mockDB.EXPECT().Exec(gomock.Any(), "DELETE FROM pvz WHERE id=$1", gomock.Any()).Return(nil, assert.AnError)
 

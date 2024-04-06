@@ -1,10 +1,17 @@
 ifeq ($(POSTGRES_SETUP_TEST),)
-	POSTGRES_SETUP_TEST := user=postgres password=1111 dbname=Route host=db port=5432 sslmode=disable
+    POSTGRES_SETUP_TEST := user=postgres password=1111 dbname=TestRoute host=localhost port=5432 sslmode=disable
 endif
 
-INTERNAL_PKG_PATH=$(CURDIR)/pkg
-MOCKGEN_TAG=1.2.0
+ifeq ($(POSTGRES_SETUP),)
+    POSTGRES_SETUP := user=postgres password=1111 dbname=Route host=db port=5432 sslmode=disable
+endif
+
+
+INTERNAL_PKG_PATH=$(CURDIR)/internal/storage
 MIGRATION_FOLDER=$(INTERNAL_PKG_PATH)/db/migrations
+
+MOCKGEN_TAG=1.2.0
+DOCKER_COMPOSE_FILE := docker-compose.yml
 
 .PHONY: migration-create
 migration-create:
@@ -12,10 +19,20 @@ migration-create:
 
 .PHONY: test-migration-up
 test-migration-up:
-	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP_TEST)" up
+	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP)" up
+
 
 .PHONY: test-migration-down
 test-migration-down:
+	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP)" down
+
+
+.PHONY: test-migration-test-up
+test-migration-test-up:
+	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP_TEST)" up
+
+.PHONY: test-migration-test-down
+test-migration-test-down:
 	goose -dir "$(MIGRATION_FOLDER)" postgres "$(POSTGRES_SETUP_TEST)" down
 
 
@@ -37,4 +54,22 @@ gofmt:
 	$(info Running tests...)
 	go test ./...
 
-test: .test ##запуск всех юнит тестов
+.PHONY: integration-test
+integration-test:
+	go test -tags=integration -v ./tests
+
+.PHONY: unit-test
+unit-test:
+	go test -v ./...
+
+.PHONY: unit-test-coverage
+unit-test-coverage:
+	go test -v ./... -coverprofile=coverage.out
+
+.PHONY: docker-up
+docker-up:
+	@docker-compose -f $(DOCKER_COMPOSE_FILE) up -d
+
+.PHONY: docker-down
+docker-down:
+	@docker-compose -f $(DOCKER_COMPOSE_FILE) down
