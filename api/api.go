@@ -1,8 +1,8 @@
-package api
+package postgresql
 
 import (
 	"HW1/internal/storage/repository"
-	"HW1/internal/storage/repository/postgresql"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,7 +16,7 @@ const Port = ":9000"
 const queryParamKey = "key"
 
 type Server1 struct {
-	Repo *postgresql.PvzRepo
+	Repo repository.PvzRepo
 }
 
 type addPvzRequest struct {
@@ -38,20 +38,19 @@ func CreateRouter(implemetation Server1) *mux.Router {
 	router.HandleFunc("/pvz", func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodPost:
-			implemetation.Create(w, req)
+			implemetation.CreatePvz(w, req)
 		default:
 			fmt.Println("error")
 		}
 	})
-
 	router.HandleFunc(fmt.Sprintf("/pvz/{%s:[0-9]+}", queryParamKey), func(w http.ResponseWriter, req *http.Request) {
 		switch req.Method {
 		case http.MethodGet:
-			implemetation.GetByID(w, req)
+			implemetation.GetPVZByID(w, req)
 		case http.MethodDelete:
-			implemetation.Delete(w, req)
+			implemetation.DeletePvz(w, req)
 		case http.MethodPut:
-			implemetation.Update(w, req)
+			implemetation.UpdatePvz(w, req)
 		default:
 			fmt.Println("error")
 		}
@@ -59,7 +58,7 @@ func CreateRouter(implemetation Server1) *mux.Router {
 	return router
 }
 
-func (s *Server1) Create(w http.ResponseWriter, req *http.Request) {
+func (s *Server1) CreatePvz(w http.ResponseWriter, req *http.Request) {
 	req.BasicAuth()
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
@@ -98,7 +97,8 @@ func (s *Server1) Create(w http.ResponseWriter, req *http.Request) {
 	w.Write(pvzJson)
 }
 
-func (s *Server1) GetByID(w http.ResponseWriter, req *http.Request) {
+// ------------------------------------------------------------------------------------
+func (s *Server1) GetPVZByID(w http.ResponseWriter, req *http.Request) {
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
 		http.Error(w, "Invalid request parameter", http.StatusBadRequest)
@@ -109,46 +109,53 @@ func (s *Server1) GetByID(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Invalid ID format", http.StatusBadRequest)
 		return
 	}
-	pvz, err := s.Repo.GetByID(req.Context(), keyInt)
-	if err != nil {
-		if errors.Is(err, repository.ErrObjectNotFound) {
-			http.Error(w, "Pvz not found", http.StatusNotFound)
-			return
-		}
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
 
-	pvzJson, _ := json.Marshal(pvz)
-	w.WriteHeader(http.StatusOK)
+	pvzJson, status := s.get(req.Context(), keyInt)
+
+	w.WriteHeader(status)
 	w.Write(pvzJson)
 }
 
-func (s *Server1) Update(w http.ResponseWriter, req *http.Request) {
-	// Получаем ID из пути запроса
+func validateGetByID(key int64) bool {
+	if key <= 0 {
+		return false
+	}
+	return true
+}
+
+func (s *Server1) get(ctx context.Context, key int64) ([]byte, int) {
+	article, err := s.Repo.GetByID(ctx, key)
+	if err != nil {
+		if errors.Is(err, repository.ErrObjectNotFound) {
+			return nil, http.StatusNotFound
+		}
+		return nil, http.StatusInternalServerError
+	}
+	pvzJson, _ := json.Marshal(article)
+
+	return pvzJson, http.StatusOK
+}
+
+// -------------------------------------------------------------------------------------------------------
+func (s *Server1) UpdatePvz(w http.ResponseWriter, req *http.Request) {
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
 		http.Error(w, "Invalid request parameter", http.StatusBadRequest)
-		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	keyInt, err := strconv.ParseInt(key, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid ID format", http.StatusBadRequest)
-		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	// Чтение тела запроса
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		http.Error(w, "Failed to read request body", http.StatusInternalServerError)
-		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	defer req.Body.Close()
 
-	// Декодирование JSON из тела запроса в структуру addPvzRequest
 	var unm addPvzRequest
 	if err = json.Unmarshal(body, &unm); err != nil {
 		http.Error(w, "Failed to unmarshal JSON", http.StatusBadRequest)
@@ -157,49 +164,41 @@ func (s *Server1) Update(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Создание объекта статьи с обновленными данными
 	updatedPvz := &repository.Pvz{
+		ID:      int64(keyInt),
 		PvzName: unm.PvzName,
 		Address: unm.Address,
 		Email:   unm.Email,
 	}
 
-	// Обновление статьи в базе данных
 	if err := s.Repo.Update(req.Context(), keyInt, updatedPvz); err != nil {
 		http.Error(w, "Failed to update pvz", http.StatusInternalServerError)
-		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Отправка ответа об успешном обновлении
-	//w.WriteHeader(http.StatusOK)
 	pvzJson, _ := json.Marshal(updatedPvz)
 	w.Write(pvzJson)
 }
 
-func (s *Server1) Delete(w http.ResponseWriter, req *http.Request) {
-	// Получаем ID из пути запроса
+func (s *Server1) DeletePvz(w http.ResponseWriter, req *http.Request) {
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
 		http.Error(w, "Invalid request parameter", http.StatusBadRequest)
-		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	keyInt, err := strconv.ParseInt(key, 10, 64)
 	if err != nil {
 		http.Error(w, "Invalid ID format", http.StatusBadRequest)
-		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	// Удаление статьи из базы данных
 	if err := s.Repo.Delete(req.Context(), keyInt); err != nil {
 		http.Error(w, "Failed to delete pvz", http.StatusInternalServerError)
-		//w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	// Отправка ответа об успешном удалении
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Successfully deleted"))
 }
+
+//----------------------------------------------------------------------------

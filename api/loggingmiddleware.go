@@ -1,4 +1,4 @@
-package api
+package postgresql
 
 import (
 	"bytes"

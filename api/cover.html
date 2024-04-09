@@ -1,0 +1,408 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>api: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">HW1/api/api.go (42.7%)</option>
+				
+				<option value="file1">HW1/api/auth.go (66.7%)</option>
+				
+				<option value="file2">HW1/api/loggingmiddleware.go (75.0%)</option>
+				
+				<option value="file3">HW1/api/middleware.go (75.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package postgresql
+
+import (
+        "HW1/internal/storage/repository"
+        "context"
+        "encoding/json"
+        "errors"
+        "fmt"
+        "github.com/gorilla/mux"
+        "io"
+        "net/http"
+        "strconv"
+)
+
+const Port = ":9000"
+const queryParamKey = "key"
+
+type Server1 struct {
+        Repo repository.PvzRepo
+}
+
+type addPvzRequest struct {
+        PvzName string `json:"pvzname"`
+        Address string `json:"address"`
+        Email   string `json:"email"`
+}
+
+type addPvzResponse struct {
+        ID      int64  `json:"id"`
+        PvzName string `json:"pvzname"`
+        Address string `json:"address"`
+        Email   string `json:"email"`
+}
+
+func CreateRouter(implemetation Server1) *mux.Router <span class="cov8" title="1">{
+        router := mux.NewRouter()
+        router.Use(BasicAuth, LoggingMiddleware)
+        router.HandleFunc("/pvz", func(w http.ResponseWriter, req *http.Request) </span><span class="cov0" title="0">{
+                switch req.Method </span>{
+                case http.MethodPost:<span class="cov0" title="0">
+                        implemetation.CreatePvz(w, req)</span>
+                default:<span class="cov0" title="0">
+                        fmt.Println("error")</span>
+                }
+        })
+
+        <span class="cov8" title="1">router.HandleFunc(fmt.Sprintf("/pvz/{%s:[0-9]+}", queryParamKey), func(w http.ResponseWriter, req *http.Request) </span><span class="cov8" title="1">{
+                switch req.Method </span>{
+                case http.MethodGet:<span class="cov0" title="0">
+                        implemetation.GetPVZByID(w, req)</span>
+                case http.MethodDelete:<span class="cov8" title="1">
+                        implemetation.DeletePvz(w, req)</span>
+                case http.MethodPut:<span class="cov8" title="1">
+                        implemetation.UpdatePvz(w, req)</span>
+                default:<span class="cov0" title="0">
+                        fmt.Println("error")</span>
+                }
+        })
+        <span class="cov8" title="1">return router</span>
+}
+
+func (s *Server1) CreatePvz(w http.ResponseWriter, req *http.Request) <span class="cov0" title="0">{
+        req.BasicAuth()
+        body, err := io.ReadAll(req.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                //w.WriteHeader(http.StatusInternalServerError)
+                http.Error(w, "Failed to read request body", http.StatusBadRequest)
+                return
+        }</span>
+        <span class="cov0" title="0">defer req.Body.Close()
+
+        var unm addPvzRequest
+        if err = json.Unmarshal(body, &amp;unm); err != nil </span><span class="cov0" title="0">{
+                //w.WriteHeader(http.StatusInternalServerError)
+                http.Error(w, "Failed to unmarshal JSON", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov0" title="0">pvzRepo := &amp;repository.Pvz{
+                PvzName: unm.PvzName,
+                Address: unm.Address,
+                Email:   unm.Email,
+        }
+        pvzJson, _ := s.create(req.Context(), pvzRepo)
+        w.Write(pvzJson)</span>
+}
+
+func validateCreate(key int64) bool <span class="cov0" title="0">{
+        if key &lt;= 0 </span><span class="cov0" title="0">{
+                return false
+        }</span>
+        <span class="cov0" title="0">return true</span>
+}
+
+func (s *Server1) create(ctx context.Context, pvzRepo *repository.Pvz) ([]byte, int) <span class="cov8" title="1">{
+        id, err := s.Repo.Add(ctx, pvzRepo)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, http.StatusInternalServerError
+                //w.WriteHeader(http.StatusInternalServerError)
+        }</span>
+
+        <span class="cov8" title="1">if err != nil </span><span class="cov0" title="0">{
+                if errors.Is(err, repository.ErrObjectNotFound) </span><span class="cov0" title="0">{
+                        return nil, http.StatusNotFound
+                }</span>
+                <span class="cov0" title="0">return nil, http.StatusInternalServerError</span>
+        }
+
+        <span class="cov8" title="1">resp := &amp;addPvzResponse{
+                ID:      id,
+                PvzName: pvzRepo.PvzName,
+                Address: pvzRepo.Address,
+                Email:   pvzRepo.Email,
+        }
+        pvzJson, _ := json.Marshal(resp)
+
+        return pvzJson, http.StatusOK</span>
+}
+
+// ------------------------------------------------------------------------------------
+func (s *Server1) GetPVZByID(w http.ResponseWriter, req *http.Request) <span class="cov0" title="0">{
+        key, ok := mux.Vars(req)[queryParamKey]
+        if !ok </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid request parameter", http.StatusBadRequest)
+                return
+        }</span>
+        <span class="cov0" title="0">keyInt, err := strconv.ParseInt(key, 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid ID format", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov0" title="0">pvzJson, status := s.get(req.Context(), keyInt)
+
+        w.WriteHeader(status)
+        w.Write(pvzJson)</span>
+}
+
+func validateGetByID(key int64) bool <span class="cov8" title="1">{
+        if key &lt;= 0 </span><span class="cov8" title="1">{
+                return false
+        }</span>
+        <span class="cov8" title="1">return true</span>
+}
+
+func (s *Server1) get(ctx context.Context, key int64) ([]byte, int) <span class="cov8" title="1">{
+        article, err := s.Repo.GetByID(ctx, key)
+        if err != nil </span><span class="cov0" title="0">{
+                if errors.Is(err, repository.ErrObjectNotFound) </span><span class="cov0" title="0">{
+                        return nil, http.StatusNotFound
+                }</span>
+                <span class="cov0" title="0">return nil, http.StatusInternalServerError</span>
+        }
+        <span class="cov8" title="1">pvzJson, _ := json.Marshal(article)
+
+        return pvzJson, http.StatusOK</span>
+}
+
+// -------------------------------------------------------------------------------------------------------
+func (s *Server1) UpdatePvz(w http.ResponseWriter, req *http.Request) <span class="cov8" title="1">{
+        key, ok := mux.Vars(req)[queryParamKey]
+        if !ok </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid request parameter", http.StatusBadRequest)
+                return
+        }</span>
+        <span class="cov8" title="1">keyInt, err := strconv.ParseInt(key, 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid ID format", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">body, err := io.ReadAll(req.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to read request body", http.StatusInternalServerError)
+                return
+        }</span>
+        <span class="cov8" title="1">defer req.Body.Close()
+
+        var unm addPvzRequest
+        if err = json.Unmarshal(body, &amp;unm); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to unmarshal JSON", http.StatusBadRequest)
+                //fmt.Println(err)
+                //w.WriteHeader(http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov8" title="1">updatedPvz := &amp;repository.Pvz{
+                PvzName: unm.PvzName,
+                Address: unm.Address,
+                Email:   unm.Email,
+        }
+
+        if err := s.Repo.Update(req.Context(), keyInt, updatedPvz); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to update pvz", http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov8" title="1">pvzJson, _ := json.Marshal(updatedPvz)
+        w.Write(pvzJson)</span>
+}
+
+func (s *Server1) DeletePvz(w http.ResponseWriter, req *http.Request) <span class="cov8" title="1">{
+        key, ok := mux.Vars(req)[queryParamKey]
+        if !ok </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid request parameter", http.StatusBadRequest)
+                return
+        }</span>
+        <span class="cov8" title="1">keyInt, err := strconv.ParseInt(key, 10, 64)
+        if err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Invalid ID format", http.StatusBadRequest)
+                return
+        }</span>
+
+        <span class="cov8" title="1">if err := s.Repo.Delete(req.Context(), keyInt); err != nil </span><span class="cov0" title="0">{
+                http.Error(w, "Failed to delete pvz", http.StatusInternalServerError)
+                return
+        }</span>
+
+        <span class="cov8" title="1">w.WriteHeader(http.StatusOK)
+        w.Write([]byte("Successfully deleted"))</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package postgresql
+
+import "golang.org/x/crypto/bcrypt"
+
+var usersPasswords = map[string][]byte{
+        "rus": []byte("$2a$12$aMfFQpGSiPiYkekov7LOsu63pZFaWzmlfm1T8lvG6JFj2Bh4SZPWS"),
+}
+
+func VerifyUserPass(username, password string) bool <span class="cov8" title="1">{
+        wantPass, hasUser := usersPasswords[username]
+        if !hasUser </span><span class="cov0" title="0">{
+                return false
+        }</span>
+        <span class="cov8" title="1">if cmperr := bcrypt.CompareHashAndPassword(wantPass, []byte(password)); cmperr == nil </span><span class="cov8" title="1">{
+                return true
+        }</span>
+        <span class="cov0" title="0">return false</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package postgresql
+
+import (
+        "bytes"
+        "io"
+        "log"
+        "net/http"
+        "time"
+)
+
+// LoggingMiddleware логгирует детали запроса и тело, если это POST, PUT или DELETE запрос.
+func LoggingMiddleware(next http.Handler) http.Handler <span class="cov8" title="1">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov8" title="1">{
+                startTime := time.Now()
+                if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete </span><span class="cov8" title="1">{
+                        body, err := io.ReadAll(r.Body)
+                        if err != nil </span><span class="cov0" title="0">{
+                                log.Printf("Error reading request body: %v", err)
+                                http.Error(w, "Error reading request body", http.StatusInternalServerError)
+                                return
+                        }</span>
+                        <span class="cov8" title="1">r.Body = io.NopCloser(bytes.NewBuffer(body))
+                        log.Printf("Method: %s, Path: %s, Body: %s", r.Method, r.URL.Path, string(body))</span>
+                }
+
+                <span class="cov8" title="1">next.ServeHTTP(w, r)
+
+                log.Printf("Processed request: %s %s in %v", r.Method, r.URL.Path, time.Since(startTime))</span>
+        })
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package postgresql
+
+import (
+        "context"
+        "fmt"
+        "net/http"
+)
+
+const UserContextKey = "user"
+
+func BasicAuth(next http.Handler) http.Handler <span class="cov8" title="1">{
+        return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) </span><span class="cov8" title="1">{
+                user, pass, ok := req.BasicAuth()
+                if ok &amp;&amp; VerifyUserPass(user, pass) </span><span class="cov8" title="1">{
+                        newctx := context.WithValue(req.Context(), UserContextKey, user)
+                        next.ServeHTTP(w, req.WithContext(newctx))
+                }</span> else<span class="cov0" title="0"> {
+                        w.Header().Set("WWW-Authenticate", `Basic realm="api"`)
+                        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+                }</span>
+
+                <span class="cov8" title="1">fmt.Println("SUCCESS")</span>
+        })
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
