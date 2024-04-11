@@ -3,9 +3,9 @@ package answer
 import "fmt"
 
 type Sender interface {
-	sendAsyncMessage(message paymentMessage) error
-	sendMessage(message paymentMessage) error
-	sendMessages(messages []paymentMessage) error
+	sendAsyncMessage(message PaymentMessage) error
+	sendMessage(message PaymentMessage) error
+	sendMessages(messages []PaymentMessage) error
 }
 
 type Repository interface {
@@ -34,7 +34,7 @@ func (s Service) Verify(answerURL string, answerMethod string, success bool, syn
 
 	if sync {
 		err = s.sender.sendMessage(
-			paymentMessage{
+			PaymentMessage{
 				answer.URL,
 				answer.Method,
 				success,

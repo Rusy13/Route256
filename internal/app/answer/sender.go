@@ -7,7 +7,7 @@ import (
 	"github.com/IBM/sarama"
 )
 
-type paymentMessage struct {
+type PaymentMessage struct {
 	AnswerURL    string
 	AnswerMethod string
 	Success      bool
@@ -25,7 +25,7 @@ func NewKafkaSender(producer *kafka.Producer, topic string) *KafkaSender {
 	}
 }
 
-func (s *KafkaSender) sendAsyncMessage(message paymentMessage) error {
+func (s *KafkaSender) sendAsyncMessage(message PaymentMessage) error {
 	kafkaMsg, err := s.buildMessage(message)
 	if err != nil {
 		fmt.Println("Send message marshal error", err)
@@ -38,7 +38,7 @@ func (s *KafkaSender) sendAsyncMessage(message paymentMessage) error {
 	return nil
 }
 
-func (s *KafkaSender) sendMessage(message paymentMessage) error {
+func (s *KafkaSender) sendMessage(message PaymentMessage) error {
 	kafkaMsg, err := s.buildMessage(message)
 	if err != nil {
 		fmt.Println("Send message marshal error", err)
@@ -56,7 +56,7 @@ func (s *KafkaSender) sendMessage(message paymentMessage) error {
 	return nil
 }
 
-func (s *KafkaSender) sendMessages(messages []paymentMessage) error {
+func (s *KafkaSender) sendMessages(messages []PaymentMessage) error {
 	var kafkaMsg []*sarama.ProducerMessage
 	var message *sarama.ProducerMessage
 	var err error
@@ -82,7 +82,7 @@ func (s *KafkaSender) sendMessages(messages []paymentMessage) error {
 	return nil
 }
 
-func (s *KafkaSender) buildMessage(message paymentMessage) (*sarama.ProducerMessage, error) {
+func (s *KafkaSender) buildMessage(message PaymentMessage) (*sarama.ProducerMessage, error) {
 	msg, err := json.Marshal(message)
 
 	if err != nil {
