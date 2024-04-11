@@ -73,3 +73,18 @@ docker-up:
 .PHONY: docker-down
 docker-down:
 	@docker-compose -f $(DOCKER_COMPOSE_FILE) down
+
+
+
+build:
+	docker-compose build
+
+up-all:
+	docker-compose up -d zookeeper kafka1 kafka2 kafka3
+
+down:
+	docker-compose down
+
+run:
+	go run ./cmd/route-kafka
+

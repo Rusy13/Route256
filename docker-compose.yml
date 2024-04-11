@@ -1,42 +1,108 @@
 version: '3.8'
 services:
-  todo-app:
-    build: ./
-    command:
-      - "./todo-app"
-      - "test-migration-up"  # Добавленная команда для запуска миграций
+#  todo-app:
+#    build: ./
+#    command:
+#      - "./todo-app"
+#      - "test-migration-up"  # Добавленная команда для запуска миграций
+#    ports:
+#      - "9000:9000"
+#      - "9001:9001"
+#    depends_on:
+#      - db
+#      - kafka1
+#      - kafka2
+#      - kafka3
+#    environment:
+#      - HOST=db
+#      - PORT=5432
+#      - POSTGRES_USER=postgres
+#      - PASSWORD=1111
+#      - DBNAME=Route
+#      - KAFKA_BROKERS=kafka1:9091,kafka2:9092,kafka3:9093  # Добавляем список брокеров Kafka
+#
+#  db:
+#    restart: always
+#    image: postgres:latest
+#    volumes:
+#      - ./.database/postgres/data:/var/lib/postgresql/data
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: 1111
+#      POSTGRES_DB: Route
+#
+#  test-db:
+#    restart: always
+#    image: postgres:latest
+#    ports:
+#      - "5433:5432"  # Используем другой порт для тестовой базы данных
+#    environment:
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: 1111
+#      POSTGRES_DB: TestRoute  # Имя тестовой базы данных может отличаться
+
+
+
+
+
+
+
+
+
+
+
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+      ZOOKEEPER_SERVERS: zookeeper:2888:3888
+    healthcheck:
+      test: echo stat | nc localhost 2181
+      interval: 10s
+      timeout: 10s
+      retries: 3
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+
+  kafka1:
+    image: confluentinc/cp-kafka:latest
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka
     depends_on:
-      - db
-    environment:
-      - HOST=db
-      - PORT=5432
-      - POSTGRES_USER=postgres
-      - PASSWORD=1111
-      - DBNAME=Route
-
-
-  db:
-    restart: always
-    image: postgres:latest
-    volumes:
-      - ./.database/postgres/data:/var/lib/postgresql/data
+      - zookeeper
     ports:
-      - "5432:5432"
+      - "9091:9091"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1111
-      POSTGRES_DB: Route
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTNERS: LISTNER_INT://kafka1:29091,LISTENER_EXT://0.0.0.0:9091
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: LISTNER_INT://kafka1:29091,LISTENER_EXT://localhost:9091
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTNER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTNER_INT
+      ZOOKEEPER: zookeeper:2181
 
-
-  test-db:
-    restart: always
-    image: postgres:latest
+  kafka2:
+    image: confluentinc/cp-kafka:latest
+    healthcheck:
+      test: ps augwwx | egrep [S]upportedKafka
+    depends_on:
+      - zookeeper
     ports:
-      - "5433:5432"  # Используем другой порт для тестовой базы данных
+      - "9092:9092"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1111
-      POSTGRES_DB: TestRoute  # Имя тестовой базы данных может отличаться
+      KAFKA_BROKER_ID: 2
+      KAFKA_LISTNERS: LISTNER_INT://kafka2:29092,LISTENER_EXT://0.0.0.0:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: LISTNER_INT://kafka2:29091,LISTENER_EXT://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTNER_INT:PLAINTEXT,LISTENER_EXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTNER_INT
+      ZOOKEEPER: zookeeper:2181
