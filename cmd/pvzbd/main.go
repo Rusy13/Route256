@@ -45,9 +45,7 @@ func main() {
 	//
 	//api.ConsumerGroupExample(brokers)
 	//go func() {
-	//fmt.Println("KEKEKKEKEKKEKEKKEKEKK")
 	//api.ConsumerGroupExample(brokers)
-	//fmt.Println("KEKEKKEKEKKEKEKKEKEKK")
 	//}()
 
 	go func() {

@@ -1,3 +1,5 @@
+//go:generate mockgen -source ./service.go -destination=./mocks/sender.go -package=mock_sender
+
 package answer
 
 import "fmt"
@@ -48,41 +50,16 @@ func (s Service) Verify(answerURL string, answerMethod string, success bool, syn
 		return
 	}
 
-	//err = s.sender.sendAsyncMessage(
-	//	paymentMessage{
-	//		answer.ID,
-	//		answer.userID,
-	//		answer.sum,
-	//		success,
-	//	},
-	//)
-	//
-	//if err != nil {
-	//	fmt.Println("Send async message error: ", err)
-	//}
-}
+	err = s.sender.sendAsyncMessage(
+		PaymentMessage{
+			answer.URL,
+			answer.Method,
+			success,
+		},
+	)
 
-//func (s Service) VerifyBatch(answerIDs []int, success bool) {
-//	var messages []paymentMessage
-//
-//	for _, ID := range answerIDs {
-//		answer := s.repo.GetAnswer(ID)
-//		err := s.repo.VerifyAnswer(ID, success)
-//		if err != nil {
-//			fmt.Println("Error in verify", err)
-//		}
-//
-//		messages = append(messages, paymentMessage{
-//			answer.ID,
-//			answer.userID,
-//			answer.sum,
-//			success,
-//		})
-//	}
-//
-//	err := s.sender.sendMessages(messages)
-//
-//	if err != nil {
-//		fmt.Println("Send message error: ", err)
-//	}
-//}
+	if err != nil {
+		fmt.Println("Send async message error: ", err)
+	}
+
+}
