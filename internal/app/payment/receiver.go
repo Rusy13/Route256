@@ -1,10 +1,11 @@
 package payment
 
 import (
-	"HW1/internal/infrastructure/kafka"
 	"errors"
-	"fmt"
 	"github.com/IBM/sarama"
+	"log"
+
+	"Homework/internal/infrastructure/kafka"
 )
 
 type HandleFunc func(message *sarama.ConsumerMessage)
@@ -28,7 +29,6 @@ func (r *KafkaReceiver) Subscribe(topic string) error {
 		return errors.New("can not find handler")
 	}
 
-	// получаем все партиции топика
 	partitionList, err := r.consumer.SingleConsumer.Partitions(topic)
 
 	if err != nil {
@@ -54,8 +54,8 @@ func (r *KafkaReceiver) Subscribe(topic string) error {
 		go func(pc sarama.PartitionConsumer, partition int32) {
 			for message := range pc.Messages() {
 				handler(message)
-				fmt.Println("Read Topic: ", topic, " Partition: ", partition, " Offset: ", message.Offset)
-				fmt.Println("Received Key: ", string(message.Key), " Value: ", string(message.Value))
+				log.Println("Read Topic: ", topic, " Partition: ", partition, " Offset: ", message.Offset)
+				log.Println("Received Key: ", string(message.Key), " Value: ", string(message.Value))
 			}
 		}(pc, partition)
 	}

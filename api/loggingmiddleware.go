@@ -1,9 +1,6 @@
 package postgresql
 
 import (
-	"HW1/internal/app/answer"
-	"HW1/internal/app/payment"
-	"HW1/internal/infrastructure/kafka"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -14,15 +11,19 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
+
+	"Homework/internal/app/answer"
+	"Homework/internal/app/payment"
+	"Homework/internal/infrastructure/kafka"
 )
 
 // LoggingMiddleware логгирует детали запроса и тело, если это POST, PUT или DELETE запрос.
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		//startTime := time.Now()
 		if r.Method == http.MethodPost || r.Method == http.MethodPut || r.Method == http.MethodDelete {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
@@ -33,20 +34,9 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 			r.Body = io.NopCloser(bytes.NewBuffer(body))
 			log.Printf("Method: %s, Path: %s, Body: %s", r.Method, r.URL.Path, string(body))
 
-			var brokers = []string{
-				//"kafka1",
-				//"kafka2",
-				//"kafka3",
-				"127.0.0.1:9091",
-				"127.0.0.1:9092",
-			}
-			//kafkaBrokers := os.Getenv("KAFKA_BROKERS")
-			//if kafkaBrokers == "" {
-			//	log.Println("KAFKA_BROKERS is not set")
-			//	return
-			//}
+			brokersStr := os.Getenv("KAFKA_BROKERS")
+			brokers := strings.Split(brokersStr, ",")
 
-			//brokers := strings.Split(kafkaBrokers, ",")
 			producerExample(brokers, r.URL.Path, r.Method)
 		}
 

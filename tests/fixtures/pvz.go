@@ -1,8 +1,8 @@
 package fixtures
 
 import (
-	"HW1/internal/storage/repository"
-	"HW1/tests/states"
+	"Homework/internal/storage/repository"
+	"Homework/tests/states"
 )
 
 type PvzBuilder struct {

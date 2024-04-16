@@ -21,27 +21,27 @@ services:
 #      - DBNAME=Route
 #      - KAFKA_BROKERS=kafka1:9091,kafka2:9092,kafka3:9093  # Добавляем список брокеров Kafka
 #
-#  db:
-#    restart: always
-#    image: postgres:latest
-#    volumes:
-#      - ./.database/postgres/data:/var/lib/postgresql/data
-#    ports:
-#      - "5432:5432"
-#    environment:
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: 1111
-#      POSTGRES_DB: Route
-#
-#  test-db:
-#    restart: always
-#    image: postgres:latest
-#    ports:
-#      - "5433:5432"  # Используем другой порт для тестовой базы данных
-#    environment:
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: 1111
-#      POSTGRES_DB: TestRoute  # Имя тестовой базы данных может отличаться
+  db:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - ./.database/postgres/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+      POSTGRES_DB: Route
+
+  test-db:
+    restart: always
+    image: postgres:latest
+    ports:
+      - "5433:5432"  # Используем другой порт для тестовой базы данных
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1111
+      POSTGRES_DB: TestRoute  # Имя тестовой базы данных может отличаться
 
 
 

@@ -1,11 +1,12 @@
 package orderserv
 
 import (
-	order2 "HW1/internal/model/order"
-	"HW1/internal/storage/order"
 	"errors"
 	"fmt"
 	"time"
+
+	order2 "Homework/internal/model/order"
+	"Homework/internal/storage/order"
 )
 
 type StorageI interface {

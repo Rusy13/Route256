@@ -1,8 +1,8 @@
 package order
 
 import (
-	models "HW1/internal/model/order"
-	"HW1/internal/service/orderserv"
+	models "Homework/internal/model/order"
+	"Homework/internal/service/orderserv"
 	"fmt"
 	"os"
 	"strconv"

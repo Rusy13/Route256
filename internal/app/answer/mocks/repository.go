@@ -10,7 +10,7 @@
 package mock_repository
 
 import (
-	answer "HW1/internal/app/answer"
+	answer "Homework/internal/app/answer"
 	reflect "reflect"
 
 	gomock "go.uber.org/mock/gomock"

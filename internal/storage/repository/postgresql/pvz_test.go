@@ -1,12 +1,13 @@
 package postgresql
 
 import (
-	"HW1/internal/storage/repository"
 	"context"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"testing"
+
+	"Homework/internal/storage/repository"
 )
 
 func Test_postgresDBRepo_GetByID(t *testing.T) {

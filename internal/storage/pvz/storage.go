@@ -1,7 +1,6 @@
 package pvz
 
 import (
-	"HW1/internal/model/pvz"
 	"bufio"
 	"encoding/json"
 	"errors"
@@ -12,6 +11,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"Homework/internal/model/pvz"
 )
 
 const storageName = "storagePvz"

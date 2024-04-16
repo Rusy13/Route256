@@ -1,10 +1,11 @@
 package postgresql
 
 import (
-	mock_database "HW1/internal/storage/db/mocks"
-	"HW1/internal/storage/repository"
 	"go.uber.org/mock/gomock"
 	"testing"
+
+	mock_database "Homework/internal/storage/db/mocks"
+	"Homework/internal/storage/repository"
 )
 
 type pvzRepoFixtures struct {

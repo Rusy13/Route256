@@ -1,14 +1,18 @@
 package main
 
 import (
-	api "HW1/api"
-	config "HW1/internal/config"
-	"HW1/internal/storage/db"
-	pp "HW1/internal/storage/repository/postgresql"
 	"context"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
+
+	api "Homework/api"
+	config "Homework/internal/config"
+	"Homework/internal/storage/db"
+	pp "Homework/internal/storage/repository/postgresql"
 )
 
 const (
@@ -18,35 +22,27 @@ const (
 
 func main() {
 
-	//port, err := strconv.Atoi(os.Getenv("PORT"))
-	//if err != nil {
-	//	log.Fatal("Failed to convert PORT to integer:", err)
-	//}
-	//config := config.StorageConfig{
-	//	Host:     os.Getenv("HOST"),
-	//	Port:     port,
-	//	Username: os.Getenv("POSTGRES_USER"),
-	//	Password: os.Getenv("PASSWORD"),
-	//	Database: os.Getenv("DBNAME"),
-	//}
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Println(err)
+		panic(err)
+	}
 
+	portStr := os.Getenv("POSTGRES_PORT")
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		panic("Error converting port to integer")
+	}
 	config := config.StorageConfig{
-		Host:     "localhost",
-		Port:     5432,
-		Username: "postgres",
-		Password: "1111",
-		Database: "Route",
+		Host:     os.Getenv("POSTGRES_HOST"),
+		Port:     port,
+		Username: os.Getenv("POSTGRES_USER"),
+		Password: os.Getenv("POSTGRES_PASSWORD"),
+		Database: os.Getenv("POSTGRES_DBNAME"),
 	}
-	//-------------------------------------------------------------------------------------------------------------
-	var brokers = []string{
-		"127.0.0.1:9091",
-		"127.0.0.1:9092",
-	}
-	//
-	//api.ConsumerGroupExample(brokers)
-	//go func() {
-	//api.ConsumerGroupExample(brokers)
-	//}()
+
+	brokersStr := os.Getenv("KAFKA_BROKERS")
+	brokers := strings.Split(brokersStr, ",")
 
 	go func() {
 		api.ConsumerExample(brokers)
@@ -74,7 +70,6 @@ func serveSecure(implementation api.Server1) {
 
 	log.Printf("Listening on port %s...\n", securePort)
 	if err := http.ListenAndServeTLS(securePort, "../../api/server.crt", "../../api/server.key", secureMux); err != nil {
-		//if err := http.ListenAndServeTLS(securePort, "api/server.crt", "api/server.key", secureMux); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -84,7 +79,6 @@ func serveInsecure() {
 		hostParts := strings.Split(req.Host, ":")
 		host := hostParts[0]
 
-		// Формируем целевой URL с портом 9000 для HTTPS
 		target := "https://" + host + securePort + req.URL.Path
 		if len(req.URL.RawQuery) > 0 {
 			target += "?" + req.URL.RawQuery

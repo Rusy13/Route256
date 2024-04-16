@@ -1,4 +1,4 @@
-module HW1
+module Homework
 
 go 1.21
 

@@ -1,10 +1,13 @@
 package answer
 
 import (
-	"HW1/internal/infrastructure/kafka"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
+	"github.com/pkg/errors"
+	"log"
+
+	"Homework/internal/infrastructure/kafka"
 )
 
 type PaymentMessage struct {
@@ -28,13 +31,12 @@ func NewKafkaSender(producer *kafka.Producer, topic string) *KafkaSender {
 func (s *KafkaSender) sendAsyncMessage(message PaymentMessage) error {
 	kafkaMsg, err := s.buildMessage(message)
 	if err != nil {
-		fmt.Println("Send message marshal error", err)
-		return err
+		return errors.Wrap(err, "failed to marshal message")
 	}
 
 	s.producer.SendAsyncMessage(kafkaMsg)
 
-	fmt.Println("Send async message with key:", kafkaMsg.Key)
+	log.Printf("Sent async message with key: %v", kafkaMsg.Key)
 	return nil
 }
 

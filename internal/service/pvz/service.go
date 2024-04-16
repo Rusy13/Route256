@@ -1,9 +1,10 @@
 package pvz
 
 import (
-	"HW1/internal/model/pvz"
-	pvzStorage "HW1/internal/storage/pvz"
 	"fmt"
+
+	"Homework/internal/model/pvz"
+	pvzStorage "Homework/internal/storage/pvz"
 )
 
 type StorageI interface {

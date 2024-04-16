@@ -1,8 +1,8 @@
 package order
 
 import (
-	models "HW1/internal/model/pvz"
-	"HW1/internal/service/pvz"
+	models "Homework/internal/model/pvz"
+	"Homework/internal/service/pvz"
 	"bufio"
 	"fmt"
 	"log"

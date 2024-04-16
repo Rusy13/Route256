@@ -1,11 +1,12 @@
 package postgresql
 
 import (
-	"HW1/internal/storage/db"
-	"HW1/internal/storage/repository"
 	"context"
 	"errors"
 	"github.com/jackc/pgx/v4"
+
+	"Homework/internal/storage/db"
+	"Homework/internal/storage/repository"
 )
 
 type PvzRepo struct {
@@ -35,6 +36,7 @@ func (r *PvzRepo) GetByID(ctx context.Context, id int64) (*repository.Pvz, error
 }
 
 func (r *PvzRepo) Update(ctx context.Context, id int64, pvz *repository.Pvz) error {
+	r.db.
 	_, err := r.db.Exec(ctx, `UPDATE pvz SET pvzname=$1, address=$2, email=$3 WHERE id=$4`, pvz.PvzName, pvz.Address, pvz.Email, id)
 	return err
 }

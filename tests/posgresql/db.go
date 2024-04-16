@@ -1,13 +1,14 @@
 package posgresql
 
 import (
-	"HW1/internal/config"
-	"HW1/internal/storage/db"
 	"context"
 	"fmt"
 	"strings"
 	"sync"
 	"testing"
+
+	"Homework/internal/config"
+	"Homework/internal/storage/db"
 )
 
 type TDB struct {

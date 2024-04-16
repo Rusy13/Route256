@@ -1,15 +1,16 @@
 package tests
 
 import (
-	"HW1/internal/app/answer"
-	"HW1/internal/app/payment"
-	"HW1/internal/infrastructure/kafka"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/IBM/sarama"
 	"testing"
 	"time"
+
+	"Homework/internal/app/answer"
+	"Homework/internal/app/payment"
+	"Homework/internal/infrastructure/kafka"
 )
 
 func TestKafkaProducer(t *testing.T) {

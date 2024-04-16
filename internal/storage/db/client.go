@@ -1,11 +1,11 @@
 package db
 
 import (
-	"HW1/internal/config"
 	"context"
 	"fmt"
-
 	"github.com/jackc/pgx/v4/pgxpool"
+
+	"Homework/internal/config"
 )
 
 func NewDb(ctx context.Context, config config.StorageConfig) (*Database, error) {

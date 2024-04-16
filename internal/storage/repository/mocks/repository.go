@@ -10,11 +10,11 @@
 package mock_repository
 
 import (
-	repository "HW1/internal/storage/repository"
 	context "context"
 	reflect "reflect"
-
 	gomock "go.uber.org/mock/gomock"
+
+	repository "Homework/internal/storage/repository"
 )
 
 // MockPvzRepo is a mock of PvzRepo interface.
