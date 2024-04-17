@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 	"log"
 	"net/http"
 	"os"
@@ -57,8 +58,24 @@ func main() {
 	}
 	defer database.GetPool(ctx).Close()
 
+	addr := os.Getenv("REDIS_ADDR")
+	password := os.Getenv("REDIS_PASSWORD")
+	dbStr := os.Getenv("REDIS_DB")
+
+	db, err := strconv.Atoi(dbStr)
+	if err != nil {
+		panic("Error converting REDIS_DB to int")
+	}
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     addr,
+		Password: password, // no password set
+		DB:       db,       // use default DB
+	})
+
 	pvzRepo := pp.NewPvzRepo(database)
-	implementation := api.Server1{Repo: pvzRepo}
+	implementation := api.Server1{Repo: pvzRepo,
+		RedisClient: rdb}
 
 	go serveSecure(implementation)
 	serveInsecure()

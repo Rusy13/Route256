@@ -1,23 +1,26 @@
 package postgresql
 
 import (
+	"Homework/internal/storage/repository"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/redis/go-redis/v9"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
-
-	"Homework/internal/storage/repository"
+	"time"
 )
 
 const Port = ":9000"
 const queryParamKey = "key"
 
 type Server1 struct {
-	Repo repository.PvzRepo
+	Repo        repository.PvzRepo
+	RedisClient *redis.Client
 }
 
 type addPvzRequest struct {
@@ -98,7 +101,6 @@ func (s *Server1) CreatePvz(w http.ResponseWriter, req *http.Request) {
 	w.Write(pvzJson)
 }
 
-// ------------------------------------------------------------------------------------
 func (s *Server1) GetPVZByID(w http.ResponseWriter, req *http.Request) {
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
@@ -111,7 +113,7 @@ func (s *Server1) GetPVZByID(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	pvzJson, status := s.get(req.Context(), keyInt)
+	pvzJson, status := s.getFromCacheOrDB(req.Context(), keyInt)
 
 	w.WriteHeader(status)
 	w.Write(pvzJson)
@@ -124,20 +126,40 @@ func validateGetByID(key int64) bool {
 	return true
 }
 
-func (s *Server1) get(ctx context.Context, key int64) ([]byte, int) {
+func (s *Server1) getFromCacheOrDB(ctx context.Context, key int64) ([]byte, int) {
+	// Чистка redis (FlushAll)
+	cacheKey := fmt.Sprintf("pvz:%d", key)
+	cachedData, err := s.RedisClient.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Println("Данные из кэша")
+		return cachedData, http.StatusOK
+	} else if !errors.Is(err, redis.Nil) {
+		return nil, http.StatusInternalServerError
+	}
+
+	// Получаем данные из базы данных, если их нет в кэше
 	article, err := s.Repo.GetByID(ctx, key)
+	log.Println("Данные из базы")
 	if err != nil {
 		if errors.Is(err, repository.ErrObjectNotFound) {
 			return nil, http.StatusNotFound
 		}
 		return nil, http.StatusInternalServerError
 	}
-	pvzJson, _ := json.Marshal(article)
+	pvzJson, err := json.Marshal(article)
+	if err != nil {
+		return nil, http.StatusInternalServerError
+	}
+
+	// Кэшируем полученные данные в Redis
+	err = s.RedisClient.Set(ctx, cacheKey, pvzJson, 10*time.Second).Err()
+	if err != nil {
+		return nil, http.StatusInternalServerError
+	}
 
 	return pvzJson, http.StatusOK
 }
 
-// -------------------------------------------------------------------------------------------------------
 func (s *Server1) UpdatePvz(w http.ResponseWriter, req *http.Request) {
 	key, ok := mux.Vars(req)[queryParamKey]
 	if !ok {
@@ -201,5 +223,3 @@ func (s *Server1) DeletePvz(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Successfully deleted"))
 }
-
-//----------------------------------------------------------------------------
