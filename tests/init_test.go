@@ -4,12 +4,13 @@
 package tests
 
 import (
-	"HW1/internal/config"
-	"HW1/tests/posgresql"
 	"fmt"
 	"github.com/joho/godotenv"
 	"os"
 	"strconv"
+
+	"Homework/internal/config"
+	"Homework/tests/posgresql"
 )
 
 var (

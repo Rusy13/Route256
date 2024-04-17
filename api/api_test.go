@@ -1,9 +1,6 @@
 package postgresql
 
 import (
-	"HW1/internal/storage/repository"
-	mock "HW1/internal/storage/repository/mocks"
-	"HW1/tests/fixtures"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -14,6 +11,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"Homework/internal/storage/repository"
+	mock "Homework/internal/storage/repository/mocks"
+	"Homework/tests/fixtures"
 )
 
 func Test_GetByID(t *testing.T) {

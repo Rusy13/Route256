@@ -1,13 +1,14 @@
 package order
 
 import (
-	"HW1/internal/model/order"
 	"bufio"
 	"encoding/json"
 	"errors"
 	"io"
 	"os"
 	"time"
+
+	"Homework/internal/model/order"
 )
 
 const storageName = "storageOrder"

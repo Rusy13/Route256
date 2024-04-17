@@ -1,11 +1,12 @@
 package main
 
 import (
-	pvzService "HW1/internal/service/pvz"
-	"HW1/internal/storage/pvz"
-	pvzCall "HW1/utils/call/pvz"
 	"log"
 	"sync"
+
+	pvzService "Homework/internal/service/pvz"
+	"Homework/internal/storage/pvz"
+	pvzCall "Homework/utils/call/pvz"
 )
 
 func main() {

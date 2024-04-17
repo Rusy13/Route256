@@ -1,7 +1,6 @@
 package postgresql
 
 import (
-	"HW1/internal/storage/repository"
 	"context"
 	"encoding/json"
 	"errors"
@@ -10,6 +9,8 @@ import (
 	"io"
 	"net/http"
 	"strconv"
+
+	"Homework/internal/storage/repository"
 )
 
 const Port = ":9000"

@@ -3,10 +3,9 @@ package db
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4"
-
 	"github.com/georgysavva/scany/pgxscan"
 	"github.com/jackc/pgconn"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
@@ -25,6 +24,8 @@ type DBops interface {
 	ExecQueryRow(ctx context.Context, query string, args ...interface{}) pgx.Row
 	Get(ctx context.Context, dest interface{}, query string, args ...interface{}) error
 	GetPool(_ context.Context) *pgxpool.Pool
+	//transaction_manager.QueryEngineProvider
+
 }
 
 func newDatabase(cluster *pgxpool.Pool) *Database {

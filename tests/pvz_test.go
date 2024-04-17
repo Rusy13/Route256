@@ -4,12 +4,6 @@
 package tests
 
 import (
-	api "HW1/api"
-	"HW1/internal/config"
-	dbN "HW1/internal/storage/db"
-	"HW1/internal/storage/repository"
-	dbrepo "HW1/internal/storage/repository/postgresql"
-	"HW1/tests/fixtures"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -20,6 +14,13 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	api "Homework/api"
+	"Homework/internal/config"
+	dbN "Homework/internal/storage/db"
+	"Homework/internal/storage/repository"
+	dbrepo "Homework/internal/storage/repository/postgresql"
+	"Homework/tests/fixtures"
 )
 
 func Test_GetPvzByID(t *testing.T) {

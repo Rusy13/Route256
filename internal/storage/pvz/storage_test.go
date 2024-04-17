@@ -1,10 +1,11 @@
 package pvz
 
 import (
-	"HW1/internal/model/pvz"
 	"os"
 	"testing"
 	"time"
+
+	"Homework/internal/model/pvz"
 )
 
 func TestNew(t *testing.T) {

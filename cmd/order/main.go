@@ -1,10 +1,11 @@
 package main
 
 import (
-	orderService "HW1/internal/service/orderserv"
-	"HW1/internal/storage/order"
-	orderCall "HW1/utils/call/order"
 	"log"
+
+	orderService "Homework/internal/service/orderserv"
+	"Homework/internal/storage/order"
+	orderCall "Homework/utils/call/order"
 )
 
 func main() {
