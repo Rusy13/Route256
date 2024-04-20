@@ -88,3 +88,10 @@ down:
 run:
 	go run ./cmd/route-kafka
 
+
+
+
+# Директива .PHONY используется для указания, что "proto" является псевдоцелью (не является именем файла)
+.PHONY: proto
+proto:
+	protoc -I protos/proto protos/proto/app/app.proto --go_out=protos/gen/go --go_opt=paths=source_relative --go-grpc_out=protos/gen/go/ --go-grpc_opt=paths=source_relative
