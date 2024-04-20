@@ -1,10 +1,14 @@
 package main
 
 import (
+	postgresql "Homework/api_grpc"
+	pb "Homework/protos/gen/go/app"
 	"context"
 	"github.com/joho/godotenv"
 	"github.com/redis/go-redis/v9"
+	"google.golang.org/grpc"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -77,8 +81,35 @@ func main() {
 	implementation := api.Server1{Repo: pvzRepo,
 		RedisClient: rdb}
 
+	// сервера GRPC
+	//repo := postgresql.NewPvzRepository() // Замените этот вызов на вашу реализацию репозитория
+	go func() {
+		//repo := postgresql.NewPvzRepository() // Замените этот вызов на вашу реализацию репозитория
+		server := &postgresql.Server{
+			Repo: pvzRepo,
+		}
+
+		// Создание TCP соединения на порту 10000
+		lis, err := net.Listen("tcp", ":10000")
+		if err != nil {
+			log.Fatalf("failed to listen: %v", err)
+		}
+
+		// Создание GRPC сервера
+		grpcServer := grpc.NewServer()
+
+		// Регистрация сервера GRPC
+		pb.RegisterPvzServiceServer(grpcServer, server)
+
+		// Запуск GRPC сервера
+		log.Println("Starting gRPC server on port :10000")
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("failed to serve: %v", err)
+		}
+	}()
 	go serveSecure(implementation)
 	serveInsecure()
+
 }
 
 func serveSecure(implementation api.Server1) {

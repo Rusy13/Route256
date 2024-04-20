@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package app;
+
+option go_package = "urd.app.v1;appv1";
+
+service PvzService {
+  rpc CreatePvz(CreatePvzRequest) returns (CreatePvzResponse) {}
+  rpc GetPvzByID(GetPvzByIDRequest) returns (GetPvzByIDResponse) {}
+  rpc UpdatePvz(UpdatePvzRequest) returns (UpdatePvzResponse) {}
+  rpc DeletePvz(DeletePvzRequest) returns (DeletePvzResponse) {}
+}
+
+message CreatePvzRequest {
+  string pvzname = 1;
+  string address = 2;
+  string email = 3;
+}
+
+message CreatePvzResponse {
+  int64 id = 1;
+  string pvzname = 2;
+  string address = 3;
+  string email = 4;
+}
+
+message GetPvzByIDRequest {
+  int64 key = 1;
+}
+
+message GetPvzByIDResponse {
+  string pvzname = 1;
+  string address = 2;
+  string email = 3;
+}
+
+message UpdatePvzRequest {
+  int64 key = 1;
+  string pvzname = 2;
+  string address = 3;
+  string email = 4;
+}
+
+message UpdatePvzResponse {
+  int64 id = 1;
+  string pvzname = 2;
+  string address = 3;
+  string email = 4;
+}
+
+message DeletePvzRequest {
+  int64 key = 1;
+}
+
+message DeletePvzResponse {
+  string message = 1;
+}
