@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"github.com/joho/godotenv"
-	"github.com/redis/go-redis/v9"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
 
 	api "Homework/api"
 	config "Homework/internal/config"
