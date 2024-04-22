@@ -5,6 +5,7 @@ import (
 	pb "Homework/protos/gen/go/app"
 	"context"
 	"github.com/joho/godotenv"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
 	"log"
@@ -108,8 +109,15 @@ func main() {
 		}
 	}()
 	go serveSecure(implementation)
+	go metric()
 	serveInsecure()
 
+}
+
+func metric() {
+	log.Printf("metrics on 2112")
+	http.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(":2112", nil)
 }
 
 func serveSecure(implementation api.Server1) {

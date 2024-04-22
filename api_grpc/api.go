@@ -6,14 +6,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Server struct {
 	Repo repository.PvzRepo
 	pb.UnimplementedPvzServiceServer
+	prometheus prometheus.Counter // Добавляем счетчик метрик
 }
 
 func (s *Server) CreatePvz(ctx context.Context, req *pb.CreatePvzRequest) (*pb.CreatePvzResponse, error) {
+	s.prometheus.Inc()
+
 	pvzRepo := &repository.Pvz{
 		PvzName: req.Pvzname,
 		Address: req.Address,

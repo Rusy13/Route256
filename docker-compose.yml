@@ -130,3 +130,12 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+
+  grafana:
+    image: prom/prometheus:v2.28.0
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+    command:
+      -
+    ports:
+      - "6379:6379"
