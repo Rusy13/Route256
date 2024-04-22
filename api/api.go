@@ -1,7 +1,6 @@
 package postgresql
 
 import (
-	"Homework/internal/storage/repository"
 	"context"
 	"encoding/json"
 	"errors"
@@ -13,10 +12,13 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"Homework/internal/storage/repository"
 )
 
 const Port = ":9000"
 const queryParamKey = "key"
+const cacheTTL = time.Second * 15
 
 type Server1 struct {
 	Repo        repository.PvzRepo
@@ -113,7 +115,7 @@ func (s *Server1) GetPVZByID(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	pvzJson, status := s.getFromCacheOrDB(req.Context(), keyInt)
+	pvzJson, status := s.get(req.Context(), keyInt)
 
 	w.WriteHeader(status)
 	w.Write(pvzJson)
@@ -126,36 +128,48 @@ func validateGetByID(key int64) bool {
 	return true
 }
 
-func (s *Server1) getFromCacheOrDB(ctx context.Context, key int64) ([]byte, int) {
+func (s *Server1) get(ctx context.Context, key int64) ([]byte, int) {
 	// Чистка redis (FlushAll)
 	cacheKey := fmt.Sprintf("pvz:%d", key)
 	cachedData, err := s.RedisClient.Get(ctx, cacheKey).Bytes()
-	if err == nil {
+	if err != nil {
+		if !errors.Is(err, redis.Nil) {
+			return nil, http.StatusInternalServerError
+		}
+	} else {
 		log.Println("Данные из кэша")
 		return cachedData, http.StatusOK
-	} else if !errors.Is(err, redis.Nil) {
-		return nil, http.StatusInternalServerError
 	}
 
-	// Получаем данные из базы данных, если их нет в кэше
 	article, err := s.Repo.GetByID(ctx, key)
-	log.Println("Данные из базы")
 	if err != nil {
 		if errors.Is(err, repository.ErrObjectNotFound) {
+			log.Printf("Article with key %s not found in database", key)
 			return nil, http.StatusNotFound
 		}
-		return nil, http.StatusInternalServerError
-	}
-	pvzJson, err := json.Marshal(article)
-	if err != nil {
+
+		log.Printf("Error retrieving data from database for key %s: %v", key, err)
 		return nil, http.StatusInternalServerError
 	}
 
-	// Кэшируем полученные данные в Redis
-	err = s.RedisClient.Set(ctx, cacheKey, pvzJson, 10*time.Second).Err()
+	log.Println("Successfully retrieved data from database")
+
+	pvzJson, err := json.Marshal(article)
 	if err != nil {
+		log.Printf("Error serializing article data for key %s: %v", key, err)
 		return nil, http.StatusInternalServerError
 	}
+
+	err = s.RedisClient.Set(ctx, cacheKey, pvzJson, cacheTTL).Err()
+	if err != nil {
+		log.Printf("Error caching data to Redis for key %s: %v", key, err)
+		return nil, http.StatusInternalServerError
+	}
+
+	log.Println("Data successfully cached in Redis")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
 	return pvzJson, http.StatusOK
 }
