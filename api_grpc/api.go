@@ -1,22 +1,26 @@
 package postgresql
 
 import (
-	"Homework/internal/storage/repository"
-	pb "Homework/protos/gen/go/app"
 	"context"
 	"errors"
 	"fmt"
-	"github.com/prometheus/client_golang/prometheus"
+	"time"
+
+	"Homework/internal/storage/repository"
+	metrics "Homework/metrics/metrics"
+	pb "Homework/protos/gen/go/app"
 )
 
 type Server struct {
 	Repo repository.PvzRepo
 	pb.UnimplementedPvzServiceServer
-	prometheus prometheus.Counter // Добавляем счетчик метрик
 }
 
 func (s *Server) CreatePvz(ctx context.Context, req *pb.CreatePvzRequest) (*pb.CreatePvzResponse, error) {
-	s.prometheus.Inc()
+	metrics.OrdersCounter.Inc()
+	metrics.OrdersInProgress.Inc()
+
+	start := time.Now() // Начало измерения времени обработки
 
 	pvzRepo := &repository.Pvz{
 		PvzName: req.Pvzname,
@@ -25,8 +29,12 @@ func (s *Server) CreatePvz(ctx context.Context, req *pb.CreatePvzRequest) (*pb.C
 	}
 	id, err := s.Repo.Add(ctx, pvzRepo)
 	if err != nil {
+		metrics.OrdersInProgress.Dec()
 		return nil, fmt.Errorf("failed to add pvz: %v", err)
 	}
+
+	metrics.ProcessingHistogram.Observe(time.Since(start).Seconds())
+	metrics.OrdersInProgress.Dec()
 
 	return &pb.CreatePvzResponse{
 		Id:      id,

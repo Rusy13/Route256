@@ -20,6 +20,7 @@ import (
 	config "Homework/internal/config"
 	"Homework/internal/storage/db"
 	pp "Homework/internal/storage/repository/postgresql"
+	metrics "Homework/metrics/metrics"
 )
 
 const (
@@ -28,6 +29,8 @@ const (
 )
 
 func main() {
+
+	metrics.Initialize()
 
 	err := godotenv.Load("../../.env")
 	if err != nil {
@@ -110,15 +113,27 @@ func main() {
 		}
 	}()
 	go serveSecure(implementation)
-	go metric()
+	//go metric()
+	go func() {
+		_ = Listen("127.0.0.1:8082")
+	}()
 	serveInsecure()
 
 }
 
-func metric() {
-	log.Printf("metrics on 2112")
-	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(":2112", nil)
+//	func metric() {
+//		http.Handle("/metrics", promhttp.Handler())
+//		log.Println("Starting metrics server on :2112")
+//		if err := http.ListenAndServe(":2112", nil); err != nil {
+//			log.Fatalf("Failed to start server: %v", err)
+//		}
+//	}
+func Listen(address string) error {
+	//use separated ServeMux to prevent handling on the global Mux
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	return http.ListenAndServe(address, mux)
 }
 
 func serveSecure(implementation api.Server1) {
