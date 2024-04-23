@@ -10,7 +10,6 @@ var (
 	ProcessingHistogram prometheus.Histogram
 )
 
-// Initialize initializes the metrics and registers them with Prometheus.
 func Initialize() {
 	OrdersCounter = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "orders_count",
@@ -28,6 +27,5 @@ func Initialize() {
 		Buckets: prometheus.LinearBuckets(0, 10, 5), // 5 интервалов по 10 секунд
 	})
 
-	// Register the metrics with Prometheus
 	prometheus.MustRegister(OrdersCounter, OrdersInProgress, ProcessingHistogram)
 }

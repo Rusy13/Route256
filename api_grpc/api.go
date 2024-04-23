@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/opentracing/opentracing-go"
 	"time"
 
 	"Homework/internal/storage/repository"
@@ -17,6 +18,9 @@ type Server struct {
 }
 
 func (s *Server) CreatePvz(ctx context.Context, req *pb.CreatePvzRequest) (*pb.CreatePvzResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "CreatePvz")
+	defer span.Finish() // Завершаем спан после выполнения функции
+
 	metrics.OrdersCounter.Inc()
 	metrics.OrdersInProgress.Inc()
 
@@ -45,6 +49,9 @@ func (s *Server) CreatePvz(ctx context.Context, req *pb.CreatePvzRequest) (*pb.C
 }
 
 func (s *Server) GetPvzByID(ctx context.Context, req *pb.GetPvzByIDRequest) (*pb.GetPvzByIDResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "GetPvzByID")
+	defer span.Finish() // Завершаем спан после выполнения функции
+
 	key := req.Key
 
 	pvz, err := s.Repo.GetByID(ctx, key)
@@ -63,6 +70,9 @@ func (s *Server) GetPvzByID(ctx context.Context, req *pb.GetPvzByIDRequest) (*pb
 }
 
 func (s *Server) UpdatePvz(ctx context.Context, req *pb.UpdatePvzRequest) (*pb.UpdatePvzResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "UpdatePvz")
+	defer span.Finish() // Завершаем спан после выполнения функции
+
 	key := req.Key
 
 	updatedPvz := &repository.Pvz{
@@ -85,6 +95,9 @@ func (s *Server) UpdatePvz(ctx context.Context, req *pb.UpdatePvzRequest) (*pb.U
 }
 
 func (s *Server) DeletePvz(ctx context.Context, req *pb.DeletePvzRequest) (*pb.DeletePvzResponse, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "DeletePvz")
+	defer span.Finish() // Завершаем спан после выполнения функции
+
 	key := req.Key
 
 	if err := s.Repo.Delete(ctx, key); err != nil {

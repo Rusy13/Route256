@@ -1,8 +1,6 @@
 package main
 
 import (
-	postgresql "Homework/api_grpc"
-	pb "Homework/protos/gen/go/app"
 	"context"
 	"log"
 	"net"
@@ -17,10 +15,13 @@ import (
 	"google.golang.org/grpc"
 
 	api "Homework/api"
+	postgresql "Homework/api_grpc"
 	config "Homework/internal/config"
 	"Homework/internal/storage/db"
 	pp "Homework/internal/storage/repository/postgresql"
 	metrics "Homework/metrics/metrics"
+	"Homework/metrics/tracer"
+	pb "Homework/protos/gen/go/app"
 )
 
 const (
@@ -29,10 +30,15 @@ const (
 )
 
 func main() {
+	_, closer, err := tracer.InitJaeger("route256")
+	if err != nil {
+		log.Fatalf("Failed to initialize Jaeger tracer: %v", err)
+	}
+	defer closer.Close() // Закрыть трассировщик в конце работы
 
 	metrics.Initialize()
 
-	err := godotenv.Load("../../.env")
+	err = godotenv.Load("../../.env")
 	if err != nil {
 		log.Println(err)
 		panic(err)
