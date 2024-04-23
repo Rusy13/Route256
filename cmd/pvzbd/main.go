@@ -92,10 +92,7 @@ func main() {
 	implementation := api.Server1{Repo: pvzRepo,
 		RedisClient: rdb}
 
-	// сервера GRPC
-	//repo := postgresql.NewPvzRepository() // Замените этот вызов на вашу реализацию репозитория
 	go func() {
-		//repo := postgresql.NewPvzRepository() // Замените этот вызов на вашу реализацию репозитория
 		server := &postgresql.Server{
 			Repo: pvzRepo,
 		}
@@ -119,7 +116,6 @@ func main() {
 		}
 	}()
 	go serveSecure(implementation)
-	//go metric()
 	go func() {
 		_ = Listen("127.0.0.1:8082")
 	}()
@@ -127,15 +123,7 @@ func main() {
 
 }
 
-//	func metric() {
-//		http.Handle("/metrics", promhttp.Handler())
-//		log.Println("Starting metrics server on :2112")
-//		if err := http.ListenAndServe(":2112", nil); err != nil {
-//			log.Fatalf("Failed to start server: %v", err)
-//		}
-//	}
 func Listen(address string) error {
-	//use separated ServeMux to prevent handling on the global Mux
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", promhttp.Handler())
 

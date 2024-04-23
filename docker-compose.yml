@@ -131,22 +131,6 @@ services:
     ports:
       - "6379:6379"
 
-#  grafana:
-#    image: prom/prometheus:v2.28.0
-#    volumes:
-#      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
-#    command:
-#      -
-#    ports:
-#      - "6379:6379"
-
-#  prometheus:
-#    image: prom/prometheus:latest
-#    volumes:
-#      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-#    ports:
-#      - "19090:9090"
-
 
   prometheus:
     image: prom/prometheus:latest
