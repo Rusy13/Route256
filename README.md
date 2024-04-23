@@ -5,5 +5,6 @@
 - devtask/GOHW-3 - API для ПВЗ
 - devtask/GOHW-4 - Работа с паттернами проектирования
 - devtask/GOHW-5 - Тесты для CRUD (юнит и интеграционные)
-
-
+- devtask/GOHW-6 - Логирование обращений в методы через Kafka
+- devtask/GOHW-7 - Хранение данных. Кэширование
+- devtask/GOHW-8 - GRPC и метрики
