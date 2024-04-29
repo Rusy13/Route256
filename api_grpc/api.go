@@ -28,7 +28,7 @@ func (s *Server) CreatePvz(ctx context.Context, req *pb.CreatePvzRequest) (*pb.C
 	start := time.Now()
 
 	pvzRepo := &repository.Pvz{
-		PvzName: req.Pvzname,
+		PvzName: req.PvzName,
 		Address: req.Address,
 		Email:   req.Email,
 	}
@@ -43,7 +43,7 @@ func (s *Server) CreatePvz(ctx context.Context, req *pb.CreatePvzRequest) (*pb.C
 
 	return &pb.CreatePvzResponse{
 		Id:      id,
-		Pvzname: pvzRepo.PvzName,
+		PvzName: pvzRepo.PvzName,
 		Address: pvzRepo.Address,
 		Email:   pvzRepo.Email,
 	}, nil
@@ -53,7 +53,11 @@ func (s *Server) GetPvzByID(ctx context.Context, req *pb.GetPvzByIDRequest) (*pb
 	span, ctx := opentracing.StartSpanFromContext(ctx, "GetPvzByID")
 	defer span.Finish()
 
-	key := req.Key
+	if req == nil {
+		return nil, errors.New("request is nil")
+	}
+
+	key := req.GetKey() // Используйте геттер для получения ключа
 
 	pvz, err := s.Repo.GetByID(ctx, key)
 	if err != nil {

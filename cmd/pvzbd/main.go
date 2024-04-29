@@ -117,8 +117,11 @@ func main() {
 	}()
 	go serveSecure(implementation)
 	go func() {
-		_ = Listen("127.0.0.1:8082")
+		if err := Listen("127.0.0.1:8082"); err != nil {
+			log.Fatalf("failed to serve HTTP: %v", err)
+		}
 	}()
+
 	serveInsecure()
 
 }
